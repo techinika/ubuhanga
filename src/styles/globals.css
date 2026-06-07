@@ -1,0 +1,239 @@
+/* ═══════════════════════════════════════════════════════════
+   Ubuhanga — Global Styles & Design Tokens
+   Warm & approachable tech archive
+════════════════════════════════════════════════════════════ */
+
+/* Google Fonts — Display + Body */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;1,700&family=Inter:wght@400;500;600;700&display=swap");
+
+/* ─── Reset ─────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+img,
+video {
+  max-width: 100%;
+  display: block;
+}
+a {
+  color: inherit;
+}
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+/* ─── Tokens ─────────────────────────────────────────────── */
+:root {
+  /* Fonts */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* Palette — Amber */
+  --color-amber-50: #fffbf0;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+  --color-amber-800: #92400e;
+  --color-amber-900: #78350f;
+
+  /* Palette — Neutral (warm gray) */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fafaf8;
+  --color-neutral-100: #f4f3ef;
+  --color-neutral-200: #e8e6df;
+  --color-neutral-300: #d4d0c8;
+  --color-neutral-400: #a8a49a;
+  --color-neutral-500: #7c7870;
+  --color-neutral-600: #5a5750;
+  --color-neutral-700: #3d3b35;
+  --color-neutral-800: #28261f;
+  --color-neutral-900: #16140f;
+
+  /* Semantic */
+  --color-bg: var(--color-neutral-0);
+  --color-surface-warm: var(--color-neutral-50);
+  --color-border: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-500);
+
+  --color-accent: var(--color-amber-600);
+  --color-accent-hover: var(--color-amber-700);
+  --color-grid-line: rgba(0, 0, 0, 0.05);
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 5rem;
+
+  /* Layout */
+  --container-max: 1200px;
+  --container-pad: 1.5rem;
+  --nav-height: 68px;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.07), 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover:
+    0 4px 12px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.08);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 220ms ease;
+  --transition-slow: 350ms ease;
+}
+
+/* Dark mode tokens */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #161410;
+    --color-surface-warm: #1c1a14;
+    --color-border: rgba(255, 255, 255, 0.09);
+    --color-border-strong: rgba(255, 255, 255, 0.16);
+
+    --color-text-primary: #f4f2ec;
+    --color-text-secondary: #a8a499;
+    --color-text-muted: #706d65;
+
+    --color-accent: var(--color-amber-400);
+    --color-accent-hover: var(--color-amber-300);
+    --color-grid-line: rgba(255, 255, 255, 0.04);
+
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    --shadow-card-hover:
+      0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ─── Base ───────────────────────────────────────────────── */
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Container ──────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--primary {
+  background: var(--color-amber-600);
+  color: #fff;
+  border-color: var(--color-amber-600);
+}
+
+.btn--primary:hover {
+  background: var(--color-amber-700);
+  border-color: var(--color-amber-700);
+  box-shadow: 0 4px 16px rgba(180, 83, 9, 0.3);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+.btn--ghost:hover {
+  background: var(--color-surface-warm);
+  border-color: var(--color-border-strong);
+}
+
+.btn--outline {
+  background: transparent;
+  color: var(--color-neutral-800);
+  border-color: var(--color-neutral-800);
+}
+
+.btn--outline:hover {
+  background: var(--color-neutral-800);
+  color: var(--color-neutral-0);
+}
+
+/* ─── Visually hidden (a11y) ─────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Focus ring ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2.5px solid var(--color-amber-500);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Selection ──────────────────────────────────────────── */
+::selection {
+  background: var(--color-amber-200);
+  color: var(--color-amber-900);
+}

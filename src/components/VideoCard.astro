@@ -1,0 +1,163 @@
+---
+// src/components/VideoCard.astro
+
+interface Video {
+  id: string;
+  title: string;
+  thumbnail: string;
+  youtubeId: string;
+  duration: string;
+  views: string;
+  category: string;
+  publishedAt: string;
+  slug: string;
+}
+
+interface Props { video: Video; }
+const { video } = Astro.props;
+---
+
+<article class="video-card" role="listitem">
+  <a href={`/videos/${video.slug}`} class="video-card__thumb-link" aria-label={`Watch: ${video.title}`} tabindex="-1">
+    <div class="video-card__thumb">
+      <img
+        src={video.thumbnail}
+        alt={`Thumbnail for "${video.title}"`}
+        loading="lazy"
+        decoding="async"
+        width="480"
+        height="270"
+      />
+      <div class="video-card__duration" aria-label={`Duration: ${video.duration}`}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M6 3.5V6l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        {video.duration}
+      </div>
+    </div>
+  </a>
+
+  <div class="video-card__body">
+    <span class="video-card__category">{video.category}</span>
+    <h3 class="video-card__title">
+      <a href={`/videos/${video.slug}`} class="video-card__title-link">
+        {video.title}
+      </a>
+    </h3>
+    <div class="video-card__meta">
+      <span class="video-card__views">{video.views} views</span>
+      <span class="video-card__dot" aria-hidden="true">·</span>
+      <time class="video-card__date" datetime={video.publishedAt}>
+        {video.publishedAt}
+      </time>
+    </div>
+  </div>
+</article>
+
+<style>
+.video-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.video-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.video-card__thumb-link { display: block; text-decoration: none; }
+
+.video-card__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-neutral-100);
+}
+
+.video-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.video-card:hover .video-card__thumb img {
+  transform: scale(1.04);
+}
+
+.video-card__duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(0,0,0,0.78);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+
+.video-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem 1.15rem;
+  flex: 1;
+}
+
+.video-card__category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-amber-700);
+  background: var(--color-amber-100);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  align-self: flex-start;
+}
+
+.video-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.video-card__title-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.video-card__title-link:hover { color: var(--color-amber-700); }
+
+.video-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: auto;
+  padding-top: 0.3rem;
+}
+
+.video-card__dot { opacity: 0.4; }
+
+.video-card__date { font-feature-settings: "tnum"; }
+
+@media (prefers-color-scheme: dark) {
+  .video-card__category {
+    background: rgba(180, 83, 9, 0.25);
+    color: var(--color-amber-300);
+  }
+
+  .video-card__title-link:hover { color: var(--color-amber-400); }
+}
+</style>

@@ -1,0 +1,443 @@
+---
+// src/pages/playlists/[slug].astro
+// Single playlist page — ordered video list, each links to /videos/[slug]
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { playlists, getPlaylistBySlug, getVideosByPlaylist } from '../../lib/data';
+
+const { slug } = Astro.params;
+const playlist = getPlaylistBySlug(slug!);
+const playlistVideos = playlist ? getVideosByPlaylist(playlist.id) : [];
+
+let totalDuration = 0;
+for (const v of playlistVideos) {
+  const parts = v.duration.split(':');
+  if (parts.length === 2) totalDuration += parseInt(parts[0]) * 60 + parseInt(parts[1]);
+  if (parts.length === 3) totalDuration += parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+}
+const totalHours = Math.floor(totalDuration / 3600);
+const totalMins = Math.floor((totalDuration % 3600) / 60);
+const durationLabel = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${totalMins}m`;
+---
+
+<BaseLayout
+  title={playlist ? `${playlist.title} — Ubuhanga` : 'Playlist not found — Ubuhanga'}
+  description={playlist?.description ?? 'This playlist could not be found.'}
+>
+
+{playlist ? (
+  <>
+    <section class="playlist-header">
+      <div class="container playlist-header__inner">
+        <div class="playlist-header__thumb">
+          <img
+            src={playlist.thumbnail}
+            alt={`Thumbnail for playlist "${playlist.title}"`}
+            width="400"
+            height="225"
+            loading="eager"
+          />
+          <div class="playlist-header__overlay">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M10 7l16 9-16 9V7z" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+        <div class="playlist-header__info">
+          <span class="playlist-header__label">Playlist</span>
+          <h1 class="playlist-header__title">{playlist.title}</h1>
+          <p class="playlist-header__desc">{playlist.description}</p>
+          <div class="playlist-header__stats">
+            <span class="playlist-header__stat">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2 3h12M2 7h8M2 11h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              {playlistVideos.length} videos
+            </span>
+            <span class="playlist-header__stat-divider" aria-hidden="true">·</span>
+            <span class="playlist-header__stat">{durationLabel}</span>
+          </div>
+          <div class="playlist-header__tags">
+            {playlist.tags.map((tag) => (
+              <span class="playlist-header__tag">{tag}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="playlist-videos">
+      <div class="container">
+        {playlistVideos.length > 0 ? (
+          <div class="playlist-videos__list" role="list">
+            {playlistVideos.map((video, idx) => (
+              <a href={`/videos/${video.slug}`} class="playlist-video-card" role="listitem">
+                <span class="playlist-video-card__index" aria-label={`Video ${idx + 1}`}>
+                  <span class="playlist-video-card__number">{idx + 1}</span>
+                </span>
+                <div class="playlist-video-card__thumb">
+                  <img
+                    src={video.thumbnail}
+                    alt={`Thumbnail for ${video.title}`}
+                    loading="lazy"
+                    width="200"
+                    height="113"
+                  />
+                  <span class="playlist-video-card__duration">{video.duration}</span>
+                </div>
+                <div class="playlist-video-card__body">
+                  <h3 class="playlist-video-card__title">{video.title}</h3>
+                  <p class="playlist-video-card__desc">{video.description}</p>
+                  <div class="playlist-video-card__meta">
+                    <span class="playlist-video-card__views">{video.views} views</span>
+                    <span class="playlist-video-card__dot" aria-hidden="true">·</span>
+                    <span class="playlist-video-card__category">{video.category}</span>
+                  </div>
+                </div>
+                <div class="playlist-video-card__play" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M8 6.5l6 3.5-6 3.5V6.5z" fill="currentColor"/>
+                  </svg>
+                </div>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div class="playlist-videos__empty">
+            <p>No videos in this playlist yet. Check back soon!</p>
+          </div>
+        )}
+      </div>
+    </section>
+  </>
+) : (
+  <section class="not-found">
+    <div class="container">
+      <h1 class="not-found__title">Playlist not found</h1>
+      <p class="not-found__text">The playlist you're looking for doesn't exist or has been removed.</p>
+      <a href="/playlists" class="btn btn--primary">Browse all playlists</a>
+    </div>
+  </section>
+)}
+
+</BaseLayout>
+
+<style>
+/* ─── Playlist Header ───────────────────────────────── */
+.playlist-header {
+  padding: 3rem 0 2.5rem;
+  background: var(--color-surface-warm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.playlist-header__inner {
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-start;
+}
+
+.playlist-header__thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 340px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-neutral-100);
+}
+
+.playlist-header__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-header__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.9);
+  transition: background var(--transition-fast);
+}
+
+.playlist-header__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.playlist-header__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-amber-700);
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.playlist-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.playlist-header__desc {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.25rem;
+  max-width: 55ch;
+}
+
+.playlist-header__stats {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.playlist-header__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.playlist-header__stat-divider { opacity: 0.4; }
+
+.playlist-header__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.playlist-header__tag {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+}
+
+/* ─── Video List ────────────────────────────────────── */
+.playlist-videos {
+  padding: 2rem 0 5rem;
+}
+
+.playlist-videos__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.playlist-video-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.playlist-video-card:hover {
+  background: var(--color-surface-warm);
+}
+
+.playlist-video-card__index {
+  flex-shrink: 0;
+  width: 2rem;
+  text-align: center;
+}
+
+.playlist-video-card__number {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.playlist-video-card__thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 180px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-neutral-100);
+}
+
+.playlist-video-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-video-card__duration {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0,0,0,0.78);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.playlist-video-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.playlist-video-card__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.playlist-video-card:hover .playlist-video-card__title {
+  color: var(--color-amber-700);
+}
+
+.playlist-video-card__desc {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+
+.playlist-video-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.playlist-video-card__dot { opacity: 0.4; }
+
+.playlist-video-card__category {
+  color: var(--color-amber-700);
+  font-weight: 500;
+}
+
+.playlist-video-card__play {
+  flex-shrink: 0;
+  color: transparent;
+  transition: color var(--transition-fast);
+}
+
+.playlist-video-card:hover .playlist-video-card__play {
+  color: var(--color-amber-600);
+}
+
+.playlist-videos__empty {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+}
+
+/* Not found */
+.not-found {
+  text-align: center;
+  padding: 6rem 0;
+}
+
+.not-found__title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.not-found__text {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .playlist-header__inner {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .playlist-header__thumb {
+    width: 100%;
+  }
+
+  .playlist-video-card {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .playlist-video-card__index {
+    display: none;
+  }
+
+  .playlist-video-card__thumb {
+    width: 140px;
+  }
+
+  .playlist-video-card__play {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .playlist-video-card__thumb {
+    width: 100%;
+  }
+
+  .playlist-video-card__body {
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .playlist-header__label {
+    color: var(--color-amber-400);
+  }
+
+  .playlist-video-card:hover .playlist-video-card__title {
+    color: var(--color-amber-400);
+  }
+
+  .playlist-video-card__category {
+    color: var(--color-amber-400);
+  }
+
+  .playlist-video-card__play {
+    color: transparent !important;
+  }
+
+  .playlist-video-card:hover .playlist-video-card__play {
+    color: var(--color-amber-400) !important;
+  }
+}
+</style>

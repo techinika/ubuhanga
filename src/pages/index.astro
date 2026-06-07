@@ -1,11 +1,734 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+// src/pages/index.astro
+// Ubuhanga — Tech Tutorial Archive Homepage
+// Framework: Astro | Styling: CSS custom properties | Data: Firebase Firestore
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import VideoCard from '../components/VideoCard.astro';
+import PlaylistCard from '../components/PlaylistCard.astro';
+import NewsletterForm from '../components/NewsletterForm.astro';
+import CategoryPill from '../components/CategoryPill.astro';
+
+// --- Firestore data fetching would live here ---
+// import { getFeaturedVideos, getPlaylists, getCategories } from '../lib/firestore';
+// const featuredVideos = await getFeaturedVideos(6);
+// const playlists = await getPlaylists(4);
+// const categories = await getCategories();
+
+// Placeholder data (replace with Firestore calls)
+const featuredVideos = [
+  {
+    id: '1',
+    title: 'Build a REST API with Node.js and Express from Scratch',
+    thumbnail: 'https://img.youtube.com/vi/fgTGADljAeg/maxresdefault.jpg',
+    youtubeId: 'fgTGADljAeg',
+    duration: '42:18',
+    views: '12.4K',
+    category: 'Node.js',
+    publishedAt: '2024-03-15',
+    slug: 'build-rest-api-nodejs-express',
+  },
+  {
+    id: '2',
+    title: 'React Hooks Explained: useState, useEffect & useContext',
+    thumbnail: 'https://img.youtube.com/vi/dpw9EHDh2bM/maxresdefault.jpg',
+    youtubeId: 'dpw9EHDh2bM',
+    duration: '35:04',
+    views: '9.1K',
+    category: 'React',
+    publishedAt: '2024-02-20',
+    slug: 'react-hooks-explained',
+  },
+  {
+    id: '3',
+    title: 'Introduction to Docker: Containers for Beginners',
+    thumbnail: 'https://img.youtube.com/vi/pTFZFxd5sRs/maxresdefault.jpg',
+    youtubeId: 'pTFZFxd5sRs',
+    duration: '58:22',
+    views: '21.7K',
+    category: 'DevOps',
+    publishedAt: '2024-01-10',
+    slug: 'intro-to-docker-containers',
+  },
+  {
+    id: '4',
+    title: 'PostgreSQL Full Course — From Zero to Pro',
+    thumbnail: 'https://img.youtube.com/vi/qw--VYLpxG4/maxresdefault.jpg',
+    youtubeId: 'qw--VYLpxG4',
+    duration: '1:14:09',
+    views: '7.3K',
+    category: 'Databases',
+    publishedAt: '2023-12-05',
+    slug: 'postgresql-full-course',
+  },
+  {
+    id: '5',
+    title: 'Python for Automation: Scripts That Save You Hours',
+    thumbnail: 'https://img.youtube.com/vi/s3LvV-KJlXk/maxresdefault.jpg',
+    youtubeId: 's3LvV-KJlXk',
+    duration: '29:47',
+    views: '15.9K',
+    category: 'Python',
+    publishedAt: '2023-11-14',
+    slug: 'python-for-automation',
+  },
+  {
+    id: '6',
+    title: 'Git & GitHub: The Complete Workflow Guide',
+    thumbnail: 'https://img.youtube.com/vi/RGOj5yH7evk/maxresdefault.jpg',
+    youtubeId: 'RGOj5yH7evk',
+    duration: '47:30',
+    views: '33.2K',
+    category: 'Git',
+    publishedAt: '2023-10-22',
+    slug: 'git-github-complete-workflow',
+  },
+];
+
+const playlists = [
+  {
+    id: 'p1',
+    title: 'Full-Stack Web Development',
+    description: 'Build complete web applications from frontend to backend, covering HTML, CSS, JS, Node, and databases.',
+    videoCount: 18,
+    thumbnail: 'https://img.youtube.com/vi/fgTGADljAeg/maxresdefault.jpg',
+    slug: 'full-stack-web-development',
+    tags: ['HTML', 'CSS', 'Node.js', 'React'],
+  },
+  {
+    id: 'p2',
+    title: 'DevOps & Cloud Fundamentals',
+    description: 'Learn Docker, CI/CD pipelines, and cloud deployment strategies for modern software teams.',
+    videoCount: 12,
+    thumbnail: 'https://img.youtube.com/vi/pTFZFxd5sRs/maxresdefault.jpg',
+    slug: 'devops-cloud-fundamentals',
+    tags: ['Docker', 'Linux', 'CI/CD', 'AWS'],
+  },
+  {
+    id: 'p3',
+    title: 'Python Mastery Series',
+    description: 'From Python basics to advanced topics like decorators, async/await, and building real-world projects.',
+    videoCount: 22,
+    thumbnail: 'https://img.youtube.com/vi/s3LvV-KJlXk/maxresdefault.jpg',
+    slug: 'python-mastery-series',
+    tags: ['Python', 'OOP', 'Automation', 'APIs'],
+  },
+  {
+    id: 'p4',
+    title: 'Database Design & SQL',
+    description: 'Master relational databases, schema design, query optimization, and ORMs.',
+    videoCount: 9,
+    thumbnail: 'https://img.youtube.com/vi/qw--VYLpxG4/maxresdefault.jpg',
+    slug: 'database-design-sql',
+    tags: ['SQL', 'PostgreSQL', 'MongoDB', 'ORM'],
+  },
+];
+
+const categories = [
+  'All', 'React', 'Node.js', 'Python', 'DevOps', 'Databases', 'Git', 'TypeScript', 'Linux', 'APIs',
+];
+
+const stats = {
+  totalVideos: 94,
+  totalPlaylists: 12,
+  totalHours: 140,
+};
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout
+  title="Ubuhanga — Tech Tutorial Archive"
+  description="A curated archive of programming and software development tutorials. Learn React, Node.js, Python, DevOps, databases, and more through free video content."
+>
+
+  <!-- ═══════════════════════════════════════
+       HERO
+  ════════════════════════════════════════ -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero__inner container">
+      <div class="hero__badge">Free · Open · Always Available</div>
+      <h1 class="hero__heading" id="hero-heading">
+        Learn by watching.<br/>
+        <em>Build by doing.</em>
+      </h1>
+      <p class="hero__subheading">
+        A curated archive of programming tutorials — from beginner fundamentals
+        to real-world projects. No paywalls, no sign-ups. Just watch and build.
+      </p>
+
+      <div class="hero__actions">
+        <a href="/videos" class="btn btn--primary">Browse all videos</a>
+        <a href="/playlists" class="btn btn--ghost">Explore playlists</a>
+      </div>
+
+      <div class="hero__stats" aria-label="Platform statistics">
+        <div class="hero__stat">
+          <span class="hero__stat-number">{stats.totalVideos}+</span>
+          <span class="hero__stat-label">Videos</span>
+        </div>
+        <div class="hero__stat-divider" aria-hidden="true"></div>
+        <div class="hero__stat">
+          <span class="hero__stat-number">{stats.totalPlaylists}</span>
+          <span class="hero__stat-label">Playlists</span>
+        </div>
+        <div class="hero__stat-divider" aria-hidden="true"></div>
+        <div class="hero__stat">
+          <span class="hero__stat-number">{stats.totalHours}h+</span>
+          <span class="hero__stat-label">Of content</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__decoration" aria-hidden="true">
+      <div class="hero__orb hero__orb--1"></div>
+      <div class="hero__orb hero__orb--2"></div>
+      <div class="hero__grid-lines"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       CATEGORIES FILTER BAR
+  ════════════════════════════════════════ -->
+  <section class="categories-bar" aria-label="Filter by category">
+    <div class="container">
+      <div class="categories-bar__scroll" role="list">
+        {categories.map((cat) => (
+          <CategoryPill label={cat} active={cat === 'All'} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       FEATURED VIDEOS
+  ════════════════════════════════════════ -->
+  <section class="section featured-videos" aria-labelledby="featured-heading">
+    <div class="container">
+      <div class="section__header">
+        <div>
+          <h2 class="section__title" id="featured-heading">Latest videos</h2>
+          <p class="section__subtitle">Fresh tutorials to keep your skills sharp</p>
+        </div>
+        <a href="/videos" class="section__link" aria-label="View all videos">
+          View all
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="video-grid" role="list">
+        {featuredVideos.map((video) => (
+          <VideoCard video={video} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       PLAYLISTS
+  ════════════════════════════════════════ -->
+  <section class="section playlists-section" aria-labelledby="playlists-heading">
+    <div class="container">
+      <div class="section__header">
+        <div>
+          <h2 class="section__title" id="playlists-heading">Learning paths</h2>
+          <p class="section__subtitle">Follow a playlist to learn a topic end-to-end</p>
+        </div>
+        <a href="/playlists" class="section__link" aria-label="View all playlists">
+          View all
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="playlist-grid" role="list">
+        {playlists.map((playlist) => (
+          <PlaylistCard playlist={playlist} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       ABOUT STRIP
+  ════════════════════════════════════════ -->
+  <section class="about-strip" aria-labelledby="about-heading">
+    <div class="container about-strip__inner">
+      <div class="about-strip__text">
+        <h2 class="about-strip__title" id="about-heading">Built for learners, by practitioners</h2>
+        <p class="about-strip__body">
+          Ubuhanga is a living archive of real-world programming tutorials. No fluff,
+          no filler — just hands-on content covering the tools and workflows developers
+          actually use. All content is free and always will be.
+        </p>
+        <a href="/about" class="btn btn--outline">Our story</a>
+      </div>
+      <div class="about-strip__feature-list" aria-label="Platform features">
+        <div class="feature-item">
+          <div class="feature-item__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14.5A6.5 6.5 0 1110 3.5a6.5 6.5 0 010 13zM8.5 7l4 3-4 3V7z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <p class="feature-item__title">Embedded YouTube player</p>
+            <p class="feature-item__desc">Watch without leaving the page, with full player controls.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 5h12M4 10h8M4 15h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <p class="feature-item__title">Organized playlists</p>
+            <p class="feature-item__desc">Content grouped into coherent learning sequences.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M13.5 13.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <p class="feature-item__title">Fast search</p>
+            <p class="feature-item__desc">Find any topic or tutorial across the entire archive.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <p class="feature-item__title">Always free</p>
+            <p class="feature-item__desc">No account, no paywall. Just click and learn.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       NEWSLETTER
+  ════════════════════════════════════════ -->
+  <section class="newsletter-section" aria-labelledby="newsletter-heading">
+    <div class="container newsletter-section__inner">
+      <div class="newsletter-section__text">
+        <p class="newsletter-section__eyebrow">Stay in the loop</p>
+        <h2 class="newsletter-section__title" id="newsletter-heading">
+          New tutorials, straight to your inbox
+        </h2>
+        <p class="newsletter-section__body">
+          We send a short newsletter whenever new content drops. No spam, no noise —
+          just a heads-up when there's something worth watching.
+        </p>
+      </div>
+      <NewsletterForm />
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+/* ═══════════════════════════════════════
+   HERO
+════════════════════════════════════════ */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 7rem 0 5rem;
+  background: var(--color-surface-warm);
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-amber-700);
+  background: var(--color-amber-100);
+  border: 1px solid var(--color-amber-200);
+  padding: 0.35rem 0.9rem;
+  border-radius: 100px;
+  margin-bottom: 1.75rem;
+}
+
+.hero__badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-amber-500);
+}
+
+.hero__heading {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  max-width: 18ch;
+  margin-bottom: 1.5rem;
+}
+
+.hero__heading em {
+  font-style: italic;
+  color: var(--color-amber-600);
+}
+
+.hero__subheading {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  max-width: 52ch;
+  margin-bottom: 2.5rem;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+  margin-bottom: 3.5rem;
+}
+
+.hero__stats {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.hero__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.hero__stat-number {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+}
+
+.hero__stat-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.hero__stat-divider {
+  width: 1px;
+  height: 2.5rem;
+  background: var(--color-border);
+}
+
+/* Decorative bg elements */
+.hero__decoration {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero__orb {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.35;
+  filter: blur(80px);
+}
+
+.hero__orb--1 {
+  width: 500px;
+  height: 500px;
+  background: var(--color-amber-200);
+  top: -150px;
+  right: -100px;
+}
+
+.hero__orb--2 {
+  width: 300px;
+  height: 300px;
+  background: var(--color-amber-100);
+  bottom: -80px;
+  right: 30%;
+}
+
+.hero__grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--color-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 75% 40%, black 20%, transparent 100%);
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════
+   CATEGORIES BAR
+════════════════════════════════════════ */
+.categories-bar {
+  position: sticky;
+  top: var(--nav-height);
+  z-index: 10;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.875rem 0;
+}
+
+.categories-bar__scroll {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.categories-bar__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══════════════════════════════════════
+   SECTIONS — SHARED
+════════════════════════════════════════ */
+.section {
+  padding: 5rem 0;
+}
+
+.section__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.section__title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+  margin-bottom: 0.3rem;
+}
+
+.section__subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+}
+
+.section__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-amber-700);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: gap 0.2s ease;
+}
+
+.section__link:hover {
+  gap: 0.7rem;
+}
+
+/* ═══════════════════════════════════════
+   VIDEO GRID
+════════════════════════════════════════ */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.75rem;
+}
+
+/* ═══════════════════════════════════════
+   PLAYLISTS GRID
+════════════════════════════════════════ */
+.playlists-section {
+  background: var(--color-surface-warm);
+}
+
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ═══════════════════════════════════════
+   ABOUT STRIP
+════════════════════════════════════════ */
+.about-strip {
+  padding: 5rem 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.about-strip__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.about-strip__title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+}
+
+.about-strip__body {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.75rem;
+}
+
+.about-strip__feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.feature-item__icon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--color-amber-100);
+  color: var(--color-amber-700);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.1rem;
+}
+
+.feature-item__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.feature-item__desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+/* ═══════════════════════════════════════
+   NEWSLETTER SECTION
+════════════════════════════════════════ */
+.newsletter-section {
+  padding: 5rem 0;
+  background: var(--color-amber-700);
+}
+
+.newsletter-section__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.newsletter-section__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-amber-200);
+  margin-bottom: 0.75rem;
+}
+
+.newsletter-section__title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.newsletter-section__body {
+  font-size: 0.975rem;
+  line-height: 1.7;
+  color: var(--color-amber-100);
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .about-strip__inner,
+  .newsletter-section__inner {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 4.5rem 0 3.5rem;
+  }
+
+  .hero__heading {
+    font-size: 2.4rem;
+  }
+
+  .section {
+    padding: 3.5rem 0;
+  }
+
+  .section__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .video-grid,
+  .playlist-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__stats {
+    gap: 1.25rem;
+  }
+
+  .hero__stat-divider {
+    display: none;
+  }
+}
+</style>

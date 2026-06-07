@@ -1,0 +1,271 @@
+---
+// src/components/NewsletterForm.astro
+// Collects name + email and saves to Firestore "subscribers" collection
+---
+
+<div class="newsletter-form-wrap">
+  <form class="newsletter-form" id="newsletter-form" novalidate aria-label="Newsletter signup form">
+    <div class="newsletter-form__row">
+      <div class="newsletter-form__field">
+        <label for="nf-name" class="newsletter-form__label">Your name</label>
+        <input
+          type="text"
+          id="nf-name"
+          name="name"
+          class="newsletter-form__input"
+          placeholder="Ada Lovelace"
+          autocomplete="given-name"
+          required
+          aria-required="true"
+        />
+      </div>
+      <div class="newsletter-form__field">
+        <label for="nf-email" class="newsletter-form__label">Email address</label>
+        <input
+          type="email"
+          id="nf-email"
+          name="email"
+          class="newsletter-form__input"
+          placeholder="ada@example.com"
+          autocomplete="email"
+          required
+          aria-required="true"
+        />
+      </div>
+    </div>
+
+    <button type="submit" class="newsletter-form__btn" id="nf-submit">
+      <span class="newsletter-form__btn-text">Subscribe for free</span>
+      <svg class="newsletter-form__btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg class="newsletter-form__spinner" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="10" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <p class="newsletter-form__note">No spam, ever. Unsubscribe any time.</p>
+  </form>
+
+  <!-- Success state -->
+  <div class="newsletter-success" id="newsletter-success" aria-live="polite" aria-hidden="true" hidden>
+    <div class="newsletter-success__icon" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="rgba(255,255,255,0.2)"/>
+        <path d="M8 14l4 4 8-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <p class="newsletter-success__title">You're in!</p>
+    <p class="newsletter-success__body">We'll send you a note when new tutorials drop.</p>
+  </div>
+
+  <!-- Error message -->
+  <p class="newsletter-error" id="newsletter-error" aria-live="assertive" hidden></p>
+</div>
+
+<!-- Firebase SDK (loaded only when this component mounts) -->
+<script>
+  import { initializeApp, getApps } from 'firebase/app';
+  import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+
+  // ─────────────────────────────────────────────────
+  // 🔧 Replace with your Firebase project config
+  // ─────────────────────────────────────────────────
+  const firebaseConfig = {
+    apiKey:            import.meta.env.PUBLIC_FIREBASE_API_KEY,
+    authDomain:        import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId:         import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket:     import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId:             import.meta.env.PUBLIC_FIREBASE_APP_ID,
+  };
+
+  // Avoid re-initializing if hot-reloaded
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  const db  = getFirestore(app);
+
+  const form    = document.getElementById('newsletter-form') as HTMLFormElement;
+  const success = document.getElementById('newsletter-success') as HTMLDivElement;
+  const errorEl = document.getElementById('newsletter-error') as HTMLParagraphElement;
+  const btn     = document.getElementById('nf-submit') as HTMLButtonElement;
+
+  function setLoading(loading: boolean) {
+    btn.disabled = loading;
+    btn.classList.toggle('is-loading', loading);
+  }
+
+  function showError(msg: string) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+  }
+
+  function clearError() {
+    errorEl.textContent = '';
+    errorEl.hidden = true;
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const nameInput  = form.elements.namedItem('name')  as HTMLInputElement;
+    const emailInput = form.elements.namedItem('email') as HTMLInputElement;
+
+    const name  = nameInput.value.trim();
+    const email = emailInput.value.trim().toLowerCase();
+
+    // Basic validation
+    if (!name)  { showError('Please enter your name.'); nameInput.focus(); return; }
+    if (!email) { showError('Please enter your email address.'); emailInput.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('Please enter a valid email address.'); emailInput.focus(); return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Check for duplicate
+      const q = query(collection(db, 'subscribers'), where('email', '==', email));
+      const existing = await getDocs(q);
+
+      if (!existing.empty) {
+        showError("You're already subscribed — no worries!");
+        setLoading(false);
+        return;
+      }
+
+      // Save to Firestore
+      await addDoc(collection(db, 'subscribers'), {
+        name,
+        email,
+        subscribedAt: serverTimestamp(),
+        source: 'homepage-newsletter',
+      });
+
+      // Show success
+      form.hidden    = true;
+      success.hidden = false;
+      success.removeAttribute('aria-hidden');
+
+    } catch (err) {
+      console.error('Newsletter subscription error:', err);
+      showError('Something went wrong. Please try again in a moment.');
+      setLoading(false);
+    }
+  });
+</script>
+
+<style>
+.newsletter-form-wrap {
+  width: 100%;
+}
+
+.newsletter-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.newsletter-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.newsletter-form__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-amber-100);
+  letter-spacing: 0.02em;
+}
+
+.newsletter-form__input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: var(--radius-md);
+  color: #fff;
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.newsletter-form__input::placeholder { color: rgba(255,255,255,0.45); }
+.newsletter-form__input:focus {
+  border-color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.18);
+}
+
+.newsletter-form__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #fff;
+  color: var(--color-amber-800);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast),
+              opacity var(--transition-fast);
+  margin-bottom: 0.875rem;
+}
+
+.newsletter-form__btn:hover { background: var(--color-amber-100); }
+.newsletter-form__btn:active { transform: scale(0.98); }
+.newsletter-form__btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+/* Spinner state */
+.newsletter-form__spinner { display: none; }
+.newsletter-form__btn.is-loading .newsletter-form__btn-text { opacity: 0.5; }
+.newsletter-form__btn.is-loading .newsletter-form__btn-icon { display: none; }
+.newsletter-form__btn.is-loading .newsletter-form__spinner {
+  display: block;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.newsletter-form__note {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+}
+
+/* Error */
+.newsletter-error {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--color-amber-200);
+  background: rgba(0,0,0,0.2);
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-md);
+}
+
+/* Success */
+.newsletter-success {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.newsletter-success__title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.newsletter-success__body {
+  font-size: 0.95rem;
+  color: var(--color-amber-100);
+  line-height: 1.6;
+}
+</style>

@@ -1,0 +1,900 @@
+---
+// src/pages/admin/index.astro
+// Admin panel — requires Google sign-in + admin Firestore record
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Admin — Ubuhanga" description="Admin dashboard" noIndex>
+  <div class="admin" id="admin-root">
+    <!-- Auth gate -->
+    <div id="admin-auth" class="admin__auth" hidden>
+      <div class="admin__auth-card">
+        <svg width="40" height="40" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect width="28" height="28" rx="7" fill="#B45309"/>
+          <path d="M7 20V10.5L14 7l7 3.5V20" stroke="#FDE68A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M11 20v-6h6v6" stroke="#FDE68A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="14" cy="10" r="1.2" fill="#FBBF24"/>
+        </svg>
+        <h1 class="admin__auth-title">Admin access</h1>
+        <p class="admin__auth-desc">Sign in with your Google account to manage content.</p>
+        <button id="admin-signin" class="admin__auth-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M18.5 10.2c0-.6-.05-1.2-.15-1.8H10v3.4h4.75a4 4 0 01-1.75 2.6v2.2h2.85c1.65-1.5 2.65-3.7 2.65-6.4z" fill="#4285F4"/>
+            <path d="M10 19c2.4 0 4.4-.8 5.85-2.2l-2.85-2.2a5.3 5.3 0 01-3 .85c-2.3 0-4.25-1.55-4.95-3.65H3.1v2.25A9 9 0 0010 19z" fill="#34A853"/>
+            <path d="M5.05 11.8a5.4 5.4 0 010-3.6V5.95H3.1a9 9 0 000 8.1l1.95-2.25z" fill="#FBBC05"/>
+            <path d="M10 3.85c1.3 0 2.45.45 3.35 1.35l2.5-2.5A8.5 8.5 0 0010 1a9 9 0 00-6.9 4.95l1.95 2.25c.7-2.1 2.65-3.65 4.95-3.65z" fill="#EA4335"/>
+          </svg>
+          Sign in with Google
+        </button>
+        <p class="admin__auth-error" id="admin-error" hidden></p>
+      </div>
+    </div>
+
+    <!-- Admin dashboard -->
+    <div id="admin-dashboard" class="admin__dashboard" hidden>
+      <header class="admin__header">
+        <h1 class="admin__title">Dashboard</h1>
+        <div class="admin__user">
+          <span id="admin-email" class="admin__email"></span>
+          <button id="admin-signout" class="admin__signout">Sign out</button>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <nav class="admin__tabs" role="tablist">
+        <button class="admin__tab is-active" role="tab" data-tab="videos" aria-selected="true">Videos</button>
+        <button class="admin__tab" role="tab" data-tab="playlists" aria-selected="false">Playlists</button>
+        <button class="admin__tab" role="tab" data-tab="categories" aria-selected="false">Categories</button>
+      </nav>
+
+      <!-- ─── Tab: Videos ─── -->
+      <section class="admin__panel is-active" id="panel-videos" role="tabpanel">
+        <div class="admin__panel-header">
+          <h2 class="admin__panel-title">Videos</h2>
+          <button class="admin__btn admin__btn--primary" id="video-add-btn">+ Add video</button>
+        </div>
+        <div class="admin__table-wrap">
+          <table class="admin__table" id="videos-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Duration</th><th>Views</th><th>Actions</th></tr></thead>
+            <tbody id="videos-body"></tbody>
+          </table>
+        </div>
+        <p class="admin__empty" id="videos-empty">No videos yet.</p>
+        <div class="admin__loading" id="videos-loading">Loading...</div>
+      </section>
+
+      <!-- ─── Tab: Playlists ─── -->
+      <section class="admin__panel" id="panel-playlists" role="tabpanel">
+        <div class="admin__panel-header">
+          <h2 class="admin__panel-title">Playlists</h2>
+          <button class="admin__btn admin__btn--primary" id="playlist-add-btn">+ Add playlist</button>
+        </div>
+        <div class="admin__table-wrap">
+          <table class="admin__table" id="playlists-table">
+            <thead><tr><th>Title</th><th>Videos</th><th>Tags</th><th>Actions</th></tr></thead>
+            <tbody id="playlists-body"></tbody>
+          </table>
+        </div>
+        <p class="admin__empty" id="playlists-empty">No playlists yet.</p>
+        <div class="admin__loading" id="playlists-loading">Loading...</div>
+      </section>
+
+      <!-- ─── Tab: Categories ─── -->
+      <section class="admin__panel" id="panel-categories" role="tabpanel">
+        <div class="admin__panel-header">
+          <h2 class="admin__panel-title">Categories</h2>
+          <button class="admin__btn admin__btn--primary" id="category-add-btn">+ Add category</button>
+        </div>
+        <div class="admin__category-list" id="categories-list"></div>
+        <p class="admin__empty" id="categories-empty">No categories yet.</p>
+        <div class="admin__loading" id="categories-loading">Loading...</div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ─── Modal ─── -->
+  <div class="admin__modal-overlay" id="admin-modal" hidden>
+    <div class="admin__modal">
+      <div class="admin__modal-header">
+        <h3 class="admin__modal-title" id="modal-title"></h3>
+        <button class="admin__modal-close" id="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="admin__modal-body" id="modal-body"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { getFirebaseAuth, getFirebaseDB, googleProvider } from '../../lib/firebase-client';
+  import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+  import {
+    collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc,
+    query, orderBy, serverTimestamp,
+  } from 'firebase/firestore';
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  // ─── State ─────────────────────────────────────────────
+  let currentUser: any = null;
+  let isAdmin = false;
+  let videosCache: any[] = [];
+  let playlistsCache: any[] = [];
+  let categoriesCache: any[] = [];
+
+  // ─── DOM refs ──────────────────────────────────────────
+  const authGate = document.getElementById('admin-auth')!;
+  const dashboard = document.getElementById('admin-dashboard')!;
+  const emailEl = document.getElementById('admin-email')!;
+  const errorEl = document.getElementById('admin-error')!;
+  const modal = document.getElementById('admin-modal')!;
+  const modalTitle = document.getElementById('modal-title')!;
+  const modalBody = document.getElementById('modal-body')!;
+  const modalClose = document.getElementById('modal-close')!;
+
+  // ─── Auth ──────────────────────────────────────────────
+  document.getElementById('admin-signin')?.addEventListener('click', async () => {
+    try {
+      errorEl.hidden = true;
+      await signInWithPopup(auth, googleProvider);
+    } catch (err: any) {
+      errorEl.textContent = err.message || 'Sign-in failed.';
+      errorEl.hidden = false;
+    }
+  });
+
+  document.getElementById('admin-signout')?.addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      emailEl.textContent = user.email || '';
+      await checkAdmin(user);
+    } else {
+      isAdmin = false;
+      authGate.hidden = false;
+      dashboard.hidden = true;
+    }
+  });
+
+  async function checkAdmin(user: any) {
+    try {
+      const adminRef = doc(db, 'admins', user.uid);
+      const snap = await getDoc(adminRef);
+      isAdmin = snap.exists();
+    } catch { isAdmin = false; }
+
+    if (isAdmin) {
+      authGate.hidden = true;
+      dashboard.hidden = false;
+      loadAll();
+    } else {
+      errorEl.textContent = 'This account does not have admin access.';
+      errorEl.hidden = false;
+      authGate.hidden = false;
+      dashboard.hidden = true;
+    }
+  }
+
+  // ─── Tab switching ─────────────────────────────────────
+  document.querySelectorAll('.admin__tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin__tab').forEach((t) => {
+        t.classList.remove('is-active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.admin__panel').forEach((p) => p.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected', 'true');
+      const panel = document.getElementById(`panel-${tab.getAttribute('data-tab')}`);
+      if (panel) panel.classList.add('is-active');
+    });
+  });
+
+  // ─── Modal helpers ─────────────────────────────────────
+  function openModal(title: string, html: string) {
+    modalTitle.textContent = title;
+    modalBody.innerHTML = html;
+    modal.hidden = false;
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    modalBody.innerHTML = '';
+  }
+
+  modalClose?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  // ─── Load all data ─────────────────────────────────────
+  async function loadAll() {
+    await Promise.all([loadVideos(), loadPlaylists(), loadCategories()]);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  VIDEOS
+  // ═══════════════════════════════════════════════════════
+  async function loadVideos() {
+    const tbody = document.getElementById('videos-body')!;
+    const empty = document.getElementById('videos-empty')!;
+    const loading = document.getElementById('videos-loading')!;
+    loading.hidden = false;
+    try {
+      const q = query(collection(db, 'videos'), orderBy('publishedAt', 'desc'));
+      const snap = await getDocs(q);
+      videosCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderVideos();
+      loading.hidden = true;
+    } catch { loading.textContent = 'Failed to load.'; }
+  }
+
+  function renderVideos() {
+    const tbody = document.getElementById('videos-body')!;
+    const empty = document.getElementById('videos-empty')!;
+    if (videosCache.length === 0) {
+      tbody.innerHTML = '';
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+    tbody.innerHTML = videosCache.map((v) => `
+      <tr>
+        <td class="admin__cell-title">${esc(v.title || '')}</td>
+        <td>${esc(v.category || '')}</td>
+        <td>${esc(v.duration || '')}</td>
+        <td>${v.views ?? 0}</td>
+        <td class="admin__cell-actions">
+          <button class="admin__btn-sm" data-edit-video="${v.id}">Edit</button>
+          <button class="admin__btn-sm admin__btn-sm--danger" data-delete-video="${v.id}">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-edit-video]').forEach((btn) =>
+      btn.addEventListener('click', () => editVideo(btn.getAttribute('data-edit-video')!))
+    );
+    tbody.querySelectorAll('[data-delete-video]').forEach((btn) =>
+      btn.addEventListener('click', () => deleteVideo(btn.getAttribute('data-delete-video')!))
+    );
+  }
+
+  document.getElementById('video-add-btn')?.addEventListener('click', () => showVideoForm());
+
+  async function showVideoForm(editId?: string) {
+    const v = editId ? videosCache.find((x) => x.id === editId) : null;
+    const catOpts = categoriesCache.map((c) =>
+      `<option value="${esc(c.name)}"${v?.category === c.name ? ' selected' : ''}>${esc(c.name)}</option>`
+    ).join('');
+    const plOpts = playlistsCache.map((p) =>
+      `<option value="${p.id}"${v?.playlistId === p.id ? ' selected' : ''}>${esc(p.title)}</option>`
+    ).join('');
+
+    openModal(editId ? 'Edit video' : 'Add video', `
+      <form id="video-form" class="admin__form">
+        <label class="admin__field">
+          <span>Title</span>
+          <input name="title" value="${esc(v?.title || '')}" required />
+        </label>
+        <label class="admin__field">
+          <span>Description</span>
+          <textarea name="description" rows="3">${esc(v?.description || '')}</textarea>
+        </label>
+        <label class="admin__field">
+          <span>YouTube ID</span>
+          <input name="youtubeId" value="${esc(v?.youtubeId || '')}" required placeholder="e.g. fgTGADljAeg" />
+        </label>
+        <label class="admin__field">
+          <span>Thumbnail URL</span>
+          <input name="thumbnail" value="${esc(v?.thumbnail || '')}" placeholder="Leave blank to auto-generate from YouTube ID" />
+        </label>
+        <label class="admin__field">
+          <span>Duration</span>
+          <input name="duration" value="${esc(v?.duration || '')}" placeholder="e.g. 42:18" required />
+        </label>
+        <label class="admin__field">
+          <span>Category</span>
+          <select name="category" required>
+            <option value="">— Select —</option>
+            ${catOpts}
+          </select>
+        </label>
+        <label class="admin__field">
+          <span>Published at</span>
+          <input name="publishedAt" type="date" value="${v?.publishedAt?.slice(0, 10) || ''}" required />
+        </label>
+        <label class="admin__field">
+          <span>Slug</span>
+          <input name="slug" value="${esc(v?.slug || '')}" placeholder="Auto-generated from title if empty" />
+        </label>
+        <label class="admin__field">
+          <span>Playlist</span>
+          <select name="playlistId">
+            <option value="">— None —</option>
+            ${plOpts}
+          </select>
+        </label>
+        <label class="admin__field">
+          <span>Tags (comma-separated)</span>
+          <input name="tags" value="${esc(v?.tags?.join(', ') || '')}" placeholder="e.g. React, Hooks, Frontend" />
+        </label>
+        <div class="admin__form-actions">
+          <button type="submit" class="admin__btn admin__btn--primary">${editId ? 'Update' : 'Create'}</button>
+          <button type="button" class="admin__btn" onclick="document.getElementById('modal-close').click()">Cancel</button>
+        </div>
+        <p class="admin__form-error" id="video-form-error" hidden></p>
+      </form>
+    `);
+
+    document.getElementById('video-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target as HTMLFormElement);
+      const data: any = {};
+      fd.forEach((val, key) => { data[key] = val; });
+      if (data.tags) data.tags = data.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
+      else data.tags = [];
+      if (!data.slug) data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      if (!data.thumbnail) data.thumbnail = `https://img.youtube.com/vi/${data.youtubeId}/maxresdefault.jpg`;
+      data.views = v?.views ?? 0;
+
+      try {
+        if (editId) {
+          await updateDoc(doc(db, 'videos', editId), { ...data });
+        } else {
+          await addDoc(collection(db, 'videos'), data);
+        }
+        closeModal();
+        await loadVideos();
+      } catch (err: any) {
+        const errEl = document.getElementById('video-form-error')!;
+        errEl.textContent = err.message || 'Failed to save.';
+        errEl.hidden = false;
+      }
+    });
+  }
+
+  function editVideo(id: string) {
+    showVideoForm(id);
+  }
+
+  async function deleteVideo(id: string) {
+    if (!confirm('Delete this video?')) return;
+    try {
+      await deleteDoc(doc(db, 'videos', id));
+      await loadVideos();
+    } catch { alert('Failed to delete.'); }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  PLAYLISTS
+  // ═══════════════════════════════════════════════════════
+  async function loadPlaylists() {
+    const tbody = document.getElementById('playlists-body')!;
+    const empty = document.getElementById('playlists-empty')!;
+    const loading = document.getElementById('playlists-loading')!;
+    loading.hidden = false;
+    try {
+      const q = query(collection(db, 'playlists'), orderBy('title'));
+      const snap = await getDocs(q);
+      playlistsCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderPlaylists();
+      loading.hidden = true;
+    } catch { loading.textContent = 'Failed to load.'; }
+  }
+
+  function renderPlaylists() {
+    const tbody = document.getElementById('playlists-body')!;
+    const empty = document.getElementById('playlists-empty')!;
+    if (playlistsCache.length === 0) {
+      tbody.innerHTML = '';
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+    tbody.innerHTML = playlistsCache.map((p) => `
+      <tr>
+        <td class="admin__cell-title">${esc(p.title || '')}</td>
+        <td>${p.videoCount ?? 0}</td>
+        <td>${esc((p.tags || []).join(', '))}</td>
+        <td class="admin__cell-actions">
+          <button class="admin__btn-sm" data-edit-playlist="${p.id}">Edit</button>
+          <button class="admin__btn-sm admin__btn-sm--danger" data-delete-playlist="${p.id}">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-edit-playlist]').forEach((btn) =>
+      btn.addEventListener('click', () => editPlaylist(btn.getAttribute('data-edit-playlist')!))
+    );
+    tbody.querySelectorAll('[data-delete-playlist]').forEach((btn) =>
+      btn.addEventListener('click', () => deletePlaylist(btn.getAttribute('data-delete-playlist')!))
+    );
+  }
+
+  document.getElementById('playlist-add-btn')?.addEventListener('click', () => showPlaylistForm());
+
+  function showPlaylistForm(editId?: string) {
+    const p = editId ? playlistsCache.find((x) => x.id === editId) : null;
+    openModal(editId ? 'Edit playlist' : 'Add playlist', `
+      <form id="playlist-form" class="admin__form">
+        <label class="admin__field">
+          <span>Title</span>
+          <input name="title" value="${esc(p?.title || '')}" required />
+        </label>
+        <label class="admin__field">
+          <span>Description</span>
+          <textarea name="description" rows="3">${esc(p?.description || '')}</textarea>
+        </label>
+        <label class="admin__field">
+          <span>Thumbnail URL</span>
+          <input name="thumbnail" value="${esc(p?.thumbnail || '')}" />
+        </label>
+        <label class="admin__field">
+          <span>Slug</span>
+          <input name="slug" value="${esc(p?.slug || '')}" placeholder="Auto-generated from title if empty" />
+        </label>
+        <label class="admin__field">
+          <span>Tags (comma-separated)</span>
+          <input name="tags" value="${esc((p?.tags || []).join(', '))}" placeholder="e.g. Docker, DevOps" />
+        </label>
+        <div class="admin__form-actions">
+          <button type="submit" class="admin__btn admin__btn--primary">${editId ? 'Update' : 'Create'}</button>
+          <button type="button" class="admin__btn" onclick="document.getElementById('modal-close').click()">Cancel</button>
+        </div>
+        <p class="admin__form-error" id="playlist-form-error" hidden></p>
+      </form>
+    `);
+
+    document.getElementById('playlist-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target as HTMLFormElement);
+      const data: any = {};
+      fd.forEach((val, key) => { data[key] = val; });
+      if (data.tags) data.tags = data.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
+      else data.tags = [];
+      if (!data.slug) data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+      try {
+        if (editId) {
+          await updateDoc(doc(db, 'playlists', editId), data);
+        } else {
+          await addDoc(collection(db, 'playlists'), data);
+        }
+        closeModal();
+        await loadPlaylists();
+      } catch (err: any) {
+        const errEl = document.getElementById('playlist-form-error')!;
+        errEl.textContent = err.message || 'Failed to save.';
+        errEl.hidden = false;
+      }
+    });
+  }
+
+  function editPlaylist(id: string) { showPlaylistForm(id); }
+
+  async function deletePlaylist(id: string) {
+    if (!confirm('Delete this playlist?')) return;
+    try {
+      await deleteDoc(doc(db, 'playlists', id));
+      await loadPlaylists();
+    } catch { alert('Failed to delete.'); }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  CATEGORIES
+  // ═══════════════════════════════════════════════════════
+  async function loadCategories() {
+    const list = document.getElementById('categories-list')!;
+    const empty = document.getElementById('categories-empty')!;
+    const loading = document.getElementById('categories-loading')!;
+    loading.hidden = false;
+    try {
+      const q = query(collection(db, 'categories'), orderBy('name'));
+      const snap = await getDocs(q);
+      categoriesCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderCategories();
+      loading.hidden = true;
+    } catch { loading.textContent = 'Failed to load.'; }
+  }
+
+  function renderCategories() {
+    const list = document.getElementById('categories-list')!;
+    const empty = document.getElementById('categories-empty')!;
+    if (categoriesCache.length === 0) {
+      list.innerHTML = '';
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+    list.innerHTML = categoriesCache.map((c) => `
+      <div class="admin__category-item">
+        <span>${esc(c.name || '')}</span>
+        <button class="admin__btn-sm admin__btn-sm--danger" data-delete-category="${c.id}">Delete</button>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-delete-category]').forEach((btn) =>
+      btn.addEventListener('click', () => deleteCategory(btn.getAttribute('data-delete-category')!))
+    );
+  }
+
+  document.getElementById('category-add-btn')?.addEventListener('click', () => {
+    const name = prompt('Category name:');
+    if (!name?.trim()) return;
+    addDoc(collection(db, 'categories'), { name: name.trim() })
+      .then(() => loadCategories())
+      .catch(() => alert('Failed to add.'));
+  });
+
+  async function deleteCategory(id: string) {
+    if (!confirm('Delete this category?')) return;
+    try {
+      await deleteDoc(doc(db, 'categories', id));
+      await loadCategories();
+    } catch { alert('Failed to delete.'); }
+  }
+
+  // ─── Helpers ──────────────────────────────────────────
+  function esc(s: string): string {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+</script>
+
+<style>
+/* ─── Admin layout ──────────────────────────────────── */
+.admin {
+  min-height: 60vh;
+}
+
+/* Auth gate */
+.admin__auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1rem;
+}
+
+.admin__auth-card {
+  text-align: center;
+  max-width: 380px;
+  padding: 3rem 2rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.admin__auth-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 1rem 0 0.5rem;
+}
+
+.admin__auth-desc {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.admin__auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #fff;
+  color: #333;
+  border: 1.5px solid #ddd;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast);
+}
+.admin__auth-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+/* Dashboard */
+.admin__dashboard { padding: 2rem 0 5rem; }
+
+.admin__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin__title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.admin__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin__email {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.admin__signout {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-amber-700);
+  background: none;
+  border: 1px solid var(--color-border);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.admin__signout:hover { background: var(--color-surface-warm); }
+
+/* Tabs */
+.admin__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 2rem;
+}
+
+.admin__tab {
+  padding: 0.7rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin__tab:hover { color: var(--color-text-primary); }
+
+.admin__tab.is-active {
+  color: var(--color-amber-700);
+  border-bottom-color: var(--color-amber-600);
+  font-weight: 600;
+}
+
+/* Panels */
+.admin__panel { display: none; }
+.admin__panel.is-active { display: block; }
+
+.admin__panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin__panel-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* Buttons */
+.admin__btn {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.admin__btn:hover { background: var(--color-surface-warm); }
+
+.admin__btn--primary {
+  background: var(--color-amber-600);
+  color: #fff;
+  border-color: var(--color-amber-600);
+}
+.admin__btn--primary:hover { background: var(--color-amber-700); }
+
+.admin__btn-sm {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.admin__btn-sm:hover { background: var(--color-surface-warm); }
+.admin__btn-sm--danger { color: #b91c1c; border-color: #fca5a5; }
+.admin__btn-sm--danger:hover { background: #fef2f2; }
+
+/* Table */
+.admin__table-wrap { overflow-x: auto; }
+
+.admin__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin__table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.admin__table td {
+  padding: 0.6rem 0.75rem;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.admin__cell-title { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin__cell-actions { white-space: nowrap; }
+
+/* Category list */
+.admin__category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin__category-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.88rem;
+  background: var(--color-surface-warm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+/* Modal */
+.admin__modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+
+.admin__modal {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 580px;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.admin__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin__modal-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.admin__modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+.admin__modal-close:hover { color: var(--color-text-primary); }
+
+.admin__modal-body { padding: 1.5rem; }
+
+/* Form */
+.admin__form { display: flex; flex-direction: column; gap: 1rem; }
+
+.admin__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.admin__field span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.admin__field input,
+.admin__field textarea,
+.admin__field select {
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.admin__field input:focus,
+.admin__field textarea:focus,
+.admin__field select:focus {
+  border-color: var(--color-amber-500);
+}
+
+.admin__form-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.admin__form-error {
+  font-size: 0.85rem;
+  color: #b91c1c;
+  background: #fef2f2;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-md);
+}
+
+/* Empty + loading states */
+.admin__empty {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  padding: 2rem 0;
+}
+
+.admin__loading {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  padding: 1rem 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .admin__auth-btn {
+    background: #222;
+    color: #eee;
+    border-color: #444;
+  }
+
+  .admin__btn-sm--danger { color: #f87171; border-color: rgba(248,113,113,0.3); }
+  .admin__btn-sm--danger:hover { background: rgba(248,113,113,0.1); }
+
+  .admin__form-error {
+    background: rgba(248,113,113,0.15);
+    color: #fca5a5;
+  }
+}
+</style>

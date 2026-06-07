@@ -1,0 +1,188 @@
+---
+// src/pages/search.astro
+// Search across all videos
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import VideoCard from '../components/VideoCard.astro';
+import { videos } from '../lib/data';
+import type { Video } from '../lib/data';
+
+const allVideos: Video[] = videos;
+---
+
+<BaseLayout
+  title="Search — Ubuhanga"
+  description="Search through all programming tutorials on Ubuhanga."
+>
+  <section class="search-page">
+    <div class="container">
+      <div class="search-page__header">
+        <h1 class="search-page__title">Search</h1>
+        <div class="search-page__field">
+          <svg class="search-page__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="8.5" cy="8.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12.5 12.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input"
+            class="search-page__input"
+            placeholder="Search tutorials by title, category, or tag..."
+            autocomplete="off"
+            autofocus
+          />
+        </div>
+      </div>
+
+      <div id="search-results" class="search-page__results">
+        <div class="search-page__count" id="result-count">{allVideos.length} videos</div>
+        <div class="video-grid" id="video-grid" role="list">
+          {allVideos.map((video) => (
+            <div class="search-result-item" data-search={JSON.stringify(video).toLowerCase()}>
+              <VideoCard video={video} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div id="search-empty" class="search-page__empty" hidden>
+        <p class="search-page__empty-title">No results found</p>
+        <p class="search-page__empty-text">Try a different search term.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('search-input') as HTMLInputElement;
+  const grid = document.getElementById('video-grid') as HTMLDivElement;
+  const count = document.getElementById('result-count') as HTMLDivElement;
+  const empty = document.getElementById('search-empty') as HTMLDivElement;
+  const items = Array.from(document.querySelectorAll('.search-result-item')) as HTMLDivElement[];
+
+  const rawData = items.map((el) => ({
+    el,
+    data: (el.getAttribute('data-search') || '').toLowerCase(),
+  }));
+
+  function filterResults(query: string) {
+    const trimmed = query.trim().toLowerCase();
+    let visible = 0;
+
+    for (const { el, data } of rawData) {
+      if (!trimmed || data.includes(trimmed)) {
+        el.hidden = false;
+        visible++;
+      } else {
+        el.hidden = true;
+      }
+    }
+
+    count.textContent = `${visible} video${visible !== 1 ? 's' : ''}`;
+    empty.hidden = visible > 0;
+  }
+
+  input?.addEventListener('input', (e) => {
+    filterResults((e.target as HTMLInputElement).value);
+  });
+</script>
+
+<style>
+.search-page {
+  padding: 3rem 0 5rem;
+}
+
+.search-page__header {
+  margin-bottom: 2.5rem;
+}
+
+.search-page__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.search-page__field {
+  position: relative;
+  max-width: 600px;
+}
+
+.search-page__icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.search-page__input {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 3rem;
+  font-size: 1.05rem;
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  background: var(--color-surface-warm);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  -webkit-appearance: none;
+}
+
+.search-page__input:focus {
+  border-color: var(--color-amber-500);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.search-page__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.search-page__results {
+  margin-top: 1rem;
+}
+
+.search-page__count {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.75rem;
+}
+
+.search-page__empty {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.search-page__empty-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.search-page__empty-text {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .search-page {
+    padding: 2rem 0 3rem;
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

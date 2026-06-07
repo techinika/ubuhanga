@@ -1,0 +1,113 @@
+---
+// src/pages/videos/index.astro
+// All videos — browsable list with category filter
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import VideoCard from '../../components/VideoCard.astro';
+import CategoryPill from '../../components/CategoryPill.astro';
+import { videos, categories } from '../../lib/data';
+
+const allVideos = videos;
+const allCategories = categories;
+---
+
+<BaseLayout
+  title="All Videos — Ubuhanga"
+  description="Browse all free programming tutorials. Learn React, Node.js, Python, DevOps, databases, and more."
+>
+  <section class="page-header">
+    <div class="container">
+      <h1 class="page-header__title">All videos</h1>
+      <p class="page-header__subtitle">{allVideos.length} tutorials across {allCategories.length - 1} topics</p>
+    </div>
+  </section>
+
+  <section class="categories-bar" aria-label="Filter by category">
+    <div class="container">
+      <div class="categories-bar__scroll" role="list">
+        {allCategories.map((cat) => (
+          <CategoryPill label={cat} active={cat === 'All'} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="videos-page">
+    <div class="container">
+      <div class="video-grid" role="list">
+        {allVideos.map((video) => (
+          <VideoCard video={video} />
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.page-header {
+  padding: 4rem 0 2.5rem;
+  background: var(--color-surface-warm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.page-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.page-header__subtitle {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+
+.categories-bar {
+  position: sticky;
+  top: var(--nav-height);
+  z-index: 10;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.875rem 0;
+}
+
+.categories-bar__scroll {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.categories-bar__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.videos-page {
+  padding: 3rem 0 5rem;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.75rem;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    padding: 2.5rem 0 1.5rem;
+  }
+
+  .videos-page {
+    padding: 2rem 0 3rem;
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -1,0 +1,91 @@
+---
+// src/pages/playlists/index.astro
+// All playlists — browse curated learning paths
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PlaylistCard from '../../components/PlaylistCard.astro';
+import { playlists } from '../../lib/data';
+
+const allPlaylists = playlists;
+---
+
+<BaseLayout
+  title="Playlists — Ubuhanga"
+  description="Follow curated learning paths covering full-stack development, DevOps, Python, and databases."
+>
+  <section class="page-header">
+    <div class="container">
+      <h1 class="page-header__title">Learning paths</h1>
+      <p class="page-header__subtitle">{allPlaylists.length} curated playlists to guide your learning</p>
+    </div>
+  </section>
+
+  <section class="playlists-page">
+    <div class="container">
+      {allPlaylists.length > 0 ? (
+        <div class="playlist-grid" role="list">
+          {allPlaylists.map((playlist) => (
+            <PlaylistCard playlist={playlist} />
+          ))}
+        </div>
+      ) : (
+        <div class="playlists-page__empty">
+          <p>No playlists yet. Check back soon!</p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.page-header {
+  padding: 4rem 0 2.5rem;
+  background: var(--color-surface-warm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.page-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.page-header__subtitle {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+
+.playlists-page {
+  padding: 3rem 0 5rem;
+}
+
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.playlists-page__empty {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    padding: 2.5rem 0 1.5rem;
+  }
+
+  .playlists-page {
+    padding: 2rem 0 3rem;
+  }
+
+  .playlist-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
