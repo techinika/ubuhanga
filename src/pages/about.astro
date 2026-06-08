@@ -28,49 +28,50 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   <section class="about-section">
     <div class="container">
       <div class="about-content">
-        <h2>What is Techinika?</h2>
+        <h2>About Techinika</h2>
         <p>
-          Techinika is a venture studio and media house. We build software products that solve
-          real problems in media, education, and the creative industry — with Africa as our home
-          and our lens.
+          Techinika is a venture studio and media house. We build tools that empower creators,
+          educate learners, and tell stories of innovation across Africa. We operate at the
+          intersection of technology, media, and the creative industry — solving real problems
+          with software, content, and context-aware design.
         </p>
         <p>
-          We are not an education initiative. Education is one of the things we do, because it is
-          one of the problems worth solving. But our mission is broader: to equip creators with
-          better tools, to tell the stories of innovation across the continent, and to build the
-          technological scaffolding that the next generation of African builders will stand on.
-        </p>
-
-        <h2>What we build</h2>
-        <p>
-          <strong>Ubuhanga</strong> — a free, open learning platform that teaches programming and
-          tech skills in Kinyarwanda. No paywalls, no sign-ups. Just practical, real-world
-          knowledge in the language you understand best. <a href="/">Start learning →</a>
-        </p>
-        <p>
-          <strong>More coming.</strong> We are actively building products for media management,
-          creator tools, and digital storytelling. If you are working on something at the
-          intersection of technology and media in Africa,
-          <a href="https://techinika.co.rw" target="_blank" rel="noopener">we should talk</a>.
+          Our other products include <a href="https://techinika.com" target="_blank" rel="noopener">Techinika.com</a>
+          and <a href="https://agaseke.me" target="_blank" rel="noopener">Agaseke</a>.
         </p>
 
-        <h2>Our approach</h2>
+        <h2>What is Ubuhanga?</h2>
         <p>
-          We build in the open. We ship fast. We design for the constraints and opportunities of
-          the African market — unreliable infrastructure, mobile-first users, price-sensitive
-          audiences, and a deep hunger for quality content in local languages.
+          <strong>Ubuhanga</strong> is a free, open learning platform by Techinika that teaches
+          programming and tech skills in <strong>Kinyarwanda</strong>. From beginner fundamentals
+          to real-world projects — no paywalls, no sign-ups, just practical knowledge in the
+          language you understand best.
         </p>
         <p>
-          Every product we create must meet three criteria: it solves a genuine problem, it works
-          where our users are, and it is built by people who understand the context.
+          Ubuhanga ni urubuga rw'uburezi rw'ubuntu rutanga amasomo y'ubumenyingiro mu ikoranabuhanga
+          mu rurimi rw'Ikinyarwanda. Intego yacu ni ugufasha abavuga Ikinyarwanda kwiga tekinoloji,
+          gukora porogaramu, no kubaka ubuhanga bw'ikoranabuhanga mu rurimi rwabo kavukire.
+        </p>
+
+        <h2>Free, always</h2>
+        <p>
+          All content on Ubuhanga is completely free. No paywalls, no subscriptions, no sign-ups
+          required. We believe that access to quality tech education should never be a barrier.
+        </p>
+        <p>
+          If you find value in what we do, consider supporting us through
+          <a href="https://agaseke.me/techinika" target="_blank" rel="noopener">Agaseke</a>.
+          Your contributions help us create more content, improve the platform, and reach more
+          learners.
         </p>
 
         <div class="about-actions">
+          <a href="/videos" class="btn btn--primary">Browse tutorials</a>
           <a
-            href="https://techinika.co.rw"
+            href="https://techinika.com"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn--primary"
+            class="btn btn--ghost"
           >
             Visit Techinika
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -82,7 +83,6 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
                 stroke-linejoin="round"></path>
             </svg>
           </a>
-          <a href="/videos" class="btn btn--ghost">Browse free tutorials</a>
         </div>
       </div>
     </div>
@@ -307,50 +307,13 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
     color: var(--color-text-secondary);
   }
 
-  /* ─── Techinika ────────────────────────────────────────── */
-  .about-techinika {
-    padding: 4rem 0 5rem;
-  }
-
-  .about-techinika__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .about-techinika__title {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--color-text-primary);
-    margin-bottom: 0.75rem;
-  }
-
-  .about-techinika__body {
-    font-size: 1rem;
-    line-height: 1.8;
-    color: var(--color-text-secondary);
-    max-width: 55ch;
-  }
-
-  .about-techinika__body a {
-    color: var(--color-amber-700);
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
   @media (prefers-color-scheme: dark) {
     .about-value__icon {
       background: rgba(180, 83, 9, 0.25);
       color: var(--color-amber-300);
     }
 
-    .about-content a,
-    .about-techinika__body a {
+    .about-content a {
       color: var(--color-amber-400);
     }
   }
@@ -365,10 +328,6 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
     .about-values {
       padding: 2rem 0 2.5rem;
     }
-    .about-techinika {
-      padding: 2.5rem 0 3rem;
-    }
-
     .about-values__grid {
       grid-template-columns: 1fr;
     }
