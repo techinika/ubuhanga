@@ -38,6 +38,7 @@ const {
 
 const siteName = SITE_NAME;
 const siteURL = SITE_URL;
+const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID as string | undefined;
 ---
 
 <!doctype html>
@@ -113,22 +114,19 @@ const siteURL = SITE_URL;
       crossorigin="anonymous"></script>
 
     <!-- Google Analytics 4 -->
-    <script is:inline>
-      (function () {
-        const id = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
-        if (!id) return;
-        const s = document.createElement("script");
-        s.async = true;
-        s.src = "https://www.googletagmanager.com/gtag/js?id=" + id;
-        document.head.appendChild(s);
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {
-          window.dataLayer.push(arguments);
-        }
-        gtag("js", new Date());
-        gtag("config", id);
-      })();
-    </script>
+    {gaMeasurementId && (
+      <>
+        <script is:inline
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
+        <script is:inline set:html={`
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${gaMeasurementId}');
+`} />
+      </>
+    )}
 
     <!-- Structured Data — Organization -->
     <script is:inline
