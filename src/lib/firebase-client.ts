@@ -13,12 +13,11 @@ import {
   getDocs,
   getDoc,
   query,
+  where,
   orderBy,
-  setDoc,
   serverTimestamp,
   increment,
   type Firestore,
-  type Timestamp,
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -66,9 +65,8 @@ export {
   getDocs,
   getDoc,
   query,
+  where,
   orderBy,
-  setDoc,
   serverTimestamp,
   increment,
 };
-export type { Timestamp };

@@ -8,7 +8,7 @@ import {
   cert,
   type ServiceAccount,
 } from "firebase-admin/app";
-import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { getFirestore, type Timestamp } from "firebase-admin/firestore";
 
 // ─── Initialize Firebase Admin (once) ────────────────────
 function getAdminApp() {
@@ -40,9 +40,9 @@ export interface Video {
   youtubeId: string;
   thumbnail: string;
   duration: string;
-  views: string;
+  views: number;
   category: string;
-  publishedAt: string; // ISO string
+  publishedAt: string;
   slug: string;
   playlistId?: string;
   tags?: string[];
@@ -81,9 +81,15 @@ export async function getFeaturedVideos(
   category?: string,
 ): Promise<Video[]> {
   const db = getDB();
-  let q = db.collection("videos").orderBy("publishedAt", "desc").limit(limit);
+  const q = db.collection("videos").orderBy("publishedAt", "desc").limit(limit);
   if (category && category !== "All") {
-    q = q.where("category", "==", category) as typeof q;
+    const filtered = q.where("category", "==", category);
+    const snap = await filtered.get();
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      publishedAt: timestampToISO(doc.data().publishedAt),
+    })) as Video[];
   }
   const snap = await q.get();
   return snap.docs.map((doc) => ({
@@ -174,11 +180,38 @@ export async function getAllPlaylistSlugs(): Promise<string[]> {
 /** Get distinct category values from videos */
 export async function getCategories(): Promise<string[]> {
   const db = getDB();
-  const snap = await db.collection("videos").select("category").get();
-  const cats = [
-    ...new Set(snap.docs.map((d) => d.data().category as string)),
-  ].sort();
+  const snap = await db.collection("categories").orderBy("name").get();
+  if (!snap.empty) {
+    const cats = snap.docs.map((d) => d.data().name as string);
+    return ["All", ...cats];
+  }
+  const vSnap = await db.collection("videos").select("category").get();
+  const cats = [...new Set(vSnap.docs.map((d) => d.data().category as string))].sort();
   return ["All", ...cats];
+}
+
+/** Fetch all videos (for search & browse pages) */
+export async function getAllVideos(): Promise<Video[]> {
+  const db = getDB();
+  const snap = await db
+    .collection("videos")
+    .orderBy("publishedAt", "desc")
+    .get();
+  return snap.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+    publishedAt: timestampToISO(doc.data().publishedAt),
+  })) as Video[];
+}
+
+/** Fetch a playlist by its document ID */
+export async function getPlaylistById(
+  playlistId: string,
+): Promise<Playlist | null> {
+  const db = getDB();
+  const snap = await db.collection("playlists").doc(playlistId).get();
+  if (!snap.exists) return null;
+  return { id: snap.id, ...snap.data() } as Playlist;
 }
 
 // ─── Stats ───────────────────────────────────────────────

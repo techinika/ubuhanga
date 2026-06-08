@@ -4,17 +4,19 @@
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import VideoCard from '../components/VideoCard.astro';
-import { videos } from '../lib/data';
-import type { Video } from '../lib/data';
+import { getAllVideos } from '../lib/firestore';
+import type { Video } from '../lib/firestore';
 
-const allVideos: Video[] = videos;
+const allVideos: Video[] = await getAllVideos();
+const searchQuery = Astro.url.searchParams.get('q') || '';
 ---
 
 <BaseLayout
   title="Search — Ubuhanga"
   description="Search through all programming tutorials on Ubuhanga."
->
-  <section class="search-page">
+    noIndex
+  >
+    <section class="search-page" data-initial-query={searchQuery}>
     <div class="container">
       <div class="search-page__header">
         <h1 class="search-page__title">Search</h1>
@@ -65,6 +67,20 @@ const allVideos: Video[] = videos;
     data: (el.getAttribute('data-search') || '').toLowerCase(),
   }));
 
+  function getURLQuery(): string {
+    return new URLSearchParams(window.location.search).get('q') || '';
+  }
+
+  function setURLQuery(query: string) {
+    const url = new URL(window.location.href);
+    if (query.trim()) {
+      url.searchParams.set('q', query.trim());
+    } else {
+      url.searchParams.delete('q');
+    }
+    window.history.replaceState(null, '', url.pathname + url.search);
+  }
+
   function filterResults(query: string) {
     const trimmed = query.trim().toLowerCase();
     let visible = 0;
@@ -82,9 +98,21 @@ const allVideos: Video[] = videos;
     empty.hidden = visible > 0;
   }
 
+  function applyURLQuery() {
+    const q = getURLQuery();
+    if (q && input) {
+      input.value = q;
+      filterResults(q);
+    }
+  }
+
   input?.addEventListener('input', (e) => {
-    filterResults((e.target as HTMLInputElement).value);
+    const val = (e.target as HTMLInputElement).value;
+    setURLQuery(val);
+    filterResults(val);
   });
+
+  applyURLQuery();
 </script>
 
 <style>

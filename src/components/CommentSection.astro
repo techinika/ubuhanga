@@ -15,17 +15,26 @@ const { videoId } = Astro.props;
     <span class="comment-section__count" id="comment-count">0</span>
   </h2>
 
-  <form class="comment-form" id="comment-form">
-    <div class="comment-form__row">
-      <input
-        type="text"
-        id="comment-name"
-        class="comment-form__input comment-form__input--half"
-        placeholder="Your name"
-        required
-        autocomplete="name"
-        maxlength={60}
-      />
+  <!-- Auth gate -->
+  <div class="comment-auth" id="comment-auth">
+    <p class="comment-auth__text">Sign in to join the conversation.</p>
+    <button class="comment-auth__btn" id="comment-auth-btn">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M18.5 10.2c0-.6-.05-1.2-.15-1.8H10v3.4h4.75a4 4 0 01-1.75 2.6v2.2h2.85c1.65-1.5 2.65-3.7 2.65-6.4z" fill="#4285F4"/>
+        <path d="M10 19c2.4 0 4.4-.8 5.85-2.2l-2.85-2.2a5.3 5.3 0 01-3 .85c-2.3 0-4.25-1.55-4.95-3.65H3.1v2.25A9 9 0 0010 19z" fill="#34A853"/>
+        <path d="M5.05 11.8a5.4 5.4 0 010-3.6V5.95H3.1a9 9 0 000 8.1l1.95-2.25z" fill="#FBBC05"/>
+        <path d="M10 3.85c1.3 0 2.45.45 3.35 1.35l2.5-2.5A8.5 8.5 0 0010 1a9 9 0 00-6.9 4.95l1.95 2.25c.7-2.1 2.65-3.65 4.95-3.65z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <p class="comment-auth__error" id="comment-auth-error" hidden></p>
+  </div>
+
+  <form class="comment-form" id="comment-form" hidden>
+    <div class="comment-form__row comment-form__user" id="comment-user">
+      <span class="comment-form__avatar" id="comment-avatar"></span>
+      <span class="comment-form__name" id="comment-display-name"></span>
+      <button type="button" class="comment-form__signout" id="comment-signout">Sign out</button>
     </div>
     <div class="comment-form__row">
       <textarea
@@ -53,43 +62,49 @@ const { videoId } = Astro.props;
 
 <script>
   import {
-    getFirebaseDB,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    orderBy,
-    doc,
-    getDoc,
-    serverTimestamp,
+    getFirebaseDB, getFirebaseAuth, googleProvider,
+    collection, addDoc, getDocs, query, where, orderBy,
+    doc, getDoc, serverTimestamp,
   } from '../lib/firebase-client';
+  import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+  import { escapeHtml } from '../lib/helpers';
 
   const section = document.getElementById('comment-section') as HTMLDivElement;
   const videoId = section?.dataset.videoId;
   if (!section || !videoId) throw new Error('Missing video ID');
 
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+  const commentsRef = collection(db, 'comments');
+
+  const authGate = document.getElementById('comment-auth') as HTMLDivElement;
+  const authBtn = document.getElementById('comment-auth-btn') as HTMLButtonElement;
+  const authError = document.getElementById('comment-auth-error') as HTMLParagraphElement;
   const form = document.getElementById('comment-form') as HTMLFormElement;
-  const nameInput = document.getElementById('comment-name') as HTMLInputElement;
   const textInput = document.getElementById('comment-text') as HTMLTextAreaElement;
   const submitBtn = document.getElementById('comment-submit') as HTMLButtonElement;
   const errorEl = document.getElementById('comment-error') as HTMLParagraphElement;
   const listEl = document.getElementById('comment-list') as HTMLDivElement;
   const loadingEl = document.getElementById('comment-loading') as HTMLParagraphElement;
   const countEl = document.getElementById('comment-count') as HTMLSpanElement;
+  const avatarEl = document.getElementById('comment-avatar') as HTMLSpanElement;
+  const displayNameEl = document.getElementById('comment-display-name') as HTMLSpanElement;
+  const signoutBtn = document.getElementById('comment-signout') as HTMLButtonElement;
 
-  const db = getFirebaseDB();
-  const commentsRef = collection(db, 'comments');
+  let currentUser: import('firebase/auth').User | null = null;
 
   async function loadComments() {
     try {
       const q = query(
         collection(db, 'comments'),
+        where('videoId', '==', videoId),
         orderBy('createdAt', 'desc')
       );
       const snap = await getDocs(q);
-      const allComments = snap.docs
-        .map((d) => ({ id: d.id, ...d.data() } as any))
-        .filter((c) => c.videoId === videoId);
+      const allComments = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      })) as Record<string, unknown>[];
 
       loadingEl.hidden = true;
       countEl.textContent = String(allComments.length);
@@ -116,20 +131,17 @@ const { videoId } = Astro.props;
       `
         )
         .join('');
-    } catch {
+    } catch (e) {
+      console.error('Failed to load comments:', e);
       loadingEl.textContent = 'Could not load comments.';
     }
   }
 
-  function escapeHtml(str: string): string {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function formatDate(ts: any): string {
+  function formatDate(ts: unknown): string {
     if (!ts) return 'just now';
-    const date = ts.toDate ? ts.toDate() : new Date(ts);
+    const date = ts instanceof Object && 'toDate' in ts && typeof (ts as { toDate: unknown }).toDate === 'function'
+      ? (ts as { toDate: () => Date }).toDate()
+      : new Date(ts as string);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const mins = Math.floor(diff / 60000);
@@ -139,29 +151,68 @@ const { videoId } = Astro.props;
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
     if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
+
+  function updateUI(user: import('firebase/auth').User | null) {
+    currentUser = user;
+    if (user) {
+      authGate.hidden = true;
+      form.hidden = false;
+      avatarEl.textContent = (user.displayName || user.email || '?').charAt(0).toUpperCase();
+      displayNameEl.textContent = user.displayName || user.email || 'Signed in';
+    } else {
+      currentUser = null;
+      authGate.hidden = false;
+      form.hidden = true;
+      authError.hidden = true;
+    }
+  }
+
+  authBtn?.addEventListener('click', async () => {
+    authError.hidden = true;
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      const code = err instanceof Object && 'code' in err ? (err as { code: string }).code : '';
+      if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+        const msg = err instanceof Error ? err.message : 'Sign-in failed. Please try again.';
+        authError.textContent = msg;
+        authError.hidden = false;
+      }
+    }
+  });
+
+  signoutBtn?.addEventListener('click', () => {
+    signOut(auth).catch((e) => console.error('Sign out failed:', e));
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    updateUI(user);
+  });
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorEl.hidden = true;
-    const name = nameInput.value.trim();
+    const user = currentUser;
+    if (!user) return;
     const text = textInput.value.trim();
-    if (!name || !text) return;
+    if (!text) return;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Posting...';
 
     try {
       await addDoc(commentsRef, {
         videoId,
-        name,
+        name: user.displayName || user.email || 'Anonymous',
+        uid: user.uid,
         text,
         createdAt: serverTimestamp(),
       });
-      nameInput.value = '';
       textInput.value = '';
       await loadComments();
-    } catch (err) {
+    } catch (e) {
+      console.error('Failed to post comment:', e);
       errorEl.textContent = 'Failed to post comment. Try again.';
       errorEl.hidden = false;
     } finally {
@@ -343,6 +394,88 @@ const { videoId } = Astro.props;
   word-wrap: break-word;
 }
 
+/* ─── Auth gate ─────────────────────────────────────── */
+.comment-auth {
+  text-align: center;
+  padding: 2rem;
+  background: var(--color-surface-warm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+}
+
+.comment-auth__text {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.comment-auth__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #fff;
+  color: #333;
+  border: 1.5px solid #ddd;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast);
+}
+.comment-auth__btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.comment-auth__error {
+  font-size: 0.85rem;
+  color: #b91c1c;
+  background: #fef2f2;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-md);
+  margin-top: 0.75rem;
+}
+
+/* Signed-in user bar */
+.comment-form__user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.comment-form__avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-amber-100);
+  color: var(--color-amber-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.comment-form__name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.comment-form__signout {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid var(--color-border);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+.comment-form__signout:hover { color: var(--color-text-primary); }
+
 @media (prefers-color-scheme: dark) {
   .comment__avatar {
     background: rgba(180, 83, 9, 0.25);
@@ -352,6 +485,17 @@ const { videoId } = Astro.props;
   .comment-form__error {
     background: rgba(180, 83, 9, 0.15);
     color: var(--color-amber-300);
+  }
+
+  .comment-auth__btn {
+    background: #222;
+    color: #eee;
+    border-color: #444;
+  }
+
+  .comment-auth__error {
+    background: rgba(248,113,113,0.15);
+    color: #fca5a5;
   }
 }
 </style>

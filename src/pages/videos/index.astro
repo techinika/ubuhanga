@@ -5,16 +5,32 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import VideoCard from '../../components/VideoCard.astro';
 import CategoryPill from '../../components/CategoryPill.astro';
-import { videos, categories } from '../../lib/data';
+import GoogleAd from '../../components/GoogleAd.astro';
+import { getAllVideos, getCategories } from '../../lib/firestore';
 
-const allVideos = videos;
-const allCategories = categories;
+const allVideos = await getAllVideos();
+const allCategories = await getCategories();
 ---
 
 <BaseLayout
   title="All Videos — Ubuhanga"
-  description="Browse all free programming tutorials. Learn React, Node.js, Python, DevOps, databases, and more."
+  description="Browse all free Kinyarwanda programming tutorials. Learn React, Node.js, Python, DevOps, databases, and more in your language."
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://ubuhanga.dev" },
+      { "@type": "ListItem", "position": 2, "name": "Videos", "item": "https://ubuhanga.dev/videos" },
+    ],
+  })} />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "All Videos - Ubuhanga",
+    "description": "Browse all free programming tutorials.",
+  })} />
+
   <section class="page-header">
     <div class="container">
       <h1 class="page-header__title">All videos</h1>
@@ -34,14 +50,22 @@ const allCategories = categories;
 
   <section class="videos-page">
     <div class="container">
-      <div class="video-grid" role="list">
+      <GoogleAd slot="VIDEOS_TOP" format="horizontal" className="ad-section" />
+      <div class="video-grid" role="list" id="video-grid">
         {allVideos.map((video) => (
-          <VideoCard video={video} />
+          <div class="video-grid__item" data-categories={video.category}>
+            <VideoCard video={video} />
+          </div>
         ))}
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  import { initCategoryFilter } from '../../lib/category-filter';
+  initCategoryFilter('.categories-bar__scroll', '.video-grid__item');
+</script>
 
 <style>
 .page-header {

@@ -2,6 +2,7 @@
 // src/layouts/BaseLayout.astro
 // Shared page shell: SEO head, nav, footer
 import '../styles/globals.css';
+// Global styles are imported via JS in the frontmatter
 
 interface Props {
   title: string;
@@ -15,19 +16,27 @@ interface Props {
 const {
   title,
   description,
-  ogImage = '/og-default.png',
+  ogImage = '/og-default.svg',
   canonicalURL = Astro.url.href,
   articlePublishedTime,
   noIndex = false,
 } = Astro.props;
 
 const siteName = 'Ubuhanga';
-const siteURL  = 'http://localhost:4321'; // ← change to your domain
+const siteURL  = 'https://ubuhanga.dev';
 ---
 
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="rw" dir="ltr" data-theme>
 <head>
+  <script is:inline>
+    (function() {
+      var t = localStorage.getItem('ubuhanga-theme');
+      if (t === 'dark' || t === 'light') {
+        document.documentElement.setAttribute('data-theme', t);
+      }
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="generator" content={Astro.generator} />
@@ -45,7 +54,10 @@ const siteURL  = 'http://localhost:4321'; // ← change to your domain
   <meta property="og:description" content={description} />
   <meta property="og:image"       content={`${siteURL}${ogImage}`} />
   <meta property="og:site_name"   content={siteName} />
+  <meta property="og:locale"      content="rw_RW" />
   {articlePublishedTime && <meta property="article:published_time" content={articlePublishedTime} />}
+  {articlePublishedTime && <meta property="article:author" content="Ubuhanga" />}
+  {articlePublishedTime && <meta property="article:section" content="Technology" />}
 
   <!-- Twitter / X -->
   <meta name="twitter:card"        content="summary_large_image" />
@@ -57,12 +69,40 @@ const siteURL  = 'http://localhost:4321'; // ← change to your domain
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon"    href="/apple-touch-icon.png" />
 
+  <!-- RSS + Sitemap -->
+  <link rel="alternate" type="application/rss+xml" title="Ubuhanga RSS Feed" href="/rss.xml" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+
+  <!-- hreflang -->
+  <link rel="alternate" href={canonicalURL} hreflang="rw" />
+  <link rel="alternate" href={canonicalURL} hreflang="x-default" />
+
   <!-- Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://www.youtube-nocookie.com" />
 
-  <!-- Structured Data — Site Sitelinks -->
+  <!-- Google AdSense — Auto Ads -->
+  <script
+    async
+    src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.PUBLIC_ADSENSE_ID}`}
+    crossorigin="anonymous"
+  />
+
+  <!-- Structured Data — Organization -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": siteName,
+    "url": siteURL,
+    "logo": `${siteURL}/favicon.svg`,
+    "sameAs": [
+      "https://youtube.com/@ubuhanga",
+      "https://techinika.co.rw",
+    ],
+  })} />
+
+  <!-- Structured Data — WebSite Sitelinks -->
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -79,7 +119,10 @@ const siteURL  = 'http://localhost:4321'; // ← change to your domain
     }
   })} />
 
-  <!-- Global styles are imported via JS in the frontmatter -->
+  <!-- Fonts -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@400;500;600;700;800&display=swap" as="style" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@400;500;600;700;800&display=swap" /></noscript>
 </head>
 
 <body>
@@ -143,7 +186,7 @@ const siteURL  = 'http://localhost:4321'; // ← change to your domain
     </div>
 
     <!-- Mobile menu -->
-    <div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label="Mobile menu">
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="navigation" aria-label="Mobile menu">
       <nav class="mobile-menu__links">
         <a href="/videos"    class="mobile-menu__link">Videos</a>
         <a href="/playlists" class="mobile-menu__link">Playlists</a>
@@ -188,6 +231,7 @@ const siteURL  = 'http://localhost:4321'; // ← change to your domain
         <div class="site-footer__nav-col">
           <p class="site-footer__nav-title">More</p>
           <a href="/about"                                       class="site-footer__nav-link">About</a>
+          <a href="/admin"                                       class="site-footer__nav-link">Admin</a>
           <a href="https://agaseke.me/techinika" target="_blank" rel="noopener" class="site-footer__nav-link">Support ↗</a>
           <a href="https://youtube.com/@ubuhanga" target="_blank" rel="noopener" class="site-footer__nav-link">YouTube ↗</a>
         </div>
@@ -198,23 +242,75 @@ const siteURL  = 'http://localhost:4321'; // ← change to your domain
       <p class="site-footer__copy">
         &copy; {new Date().getFullYear()} Ubuhanga. All rights reserved.
       </p>
-      <p class="site-footer__credit">
-        Built with <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
-      </p>
+      <div class="site-footer__bottom-right">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <svg class="theme-toggle__icon theme-toggle__icon--sun" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M8 1v1.5M8 13.5V15M3.5 3.5l1 1M11.5 11.5l1 1M1 8h1.5M13.5 8H15M3.5 12.5l1-1M11.5 4.5l1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <svg class="theme-toggle__icon theme-toggle__icon--moon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M13.5 9.5A6 6 0 016.5 2.5 6 6 0 1013.5 9.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <p class="site-footer__credit">
+          A product of <a href="https://techinika.co.rw" target="_blank" rel="noopener">Techinika</a>
+        </p>
+      </div>
     </div>
   </footer>
+
+  <!-- Theme toggle script -->
+  <script>
+    const themeBtn = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    function getPreferredTheme() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function getCurrentTheme() {
+      return html.getAttribute('data-theme') || getPreferredTheme();
+    }
+    function setTheme(t) {
+      html.setAttribute('data-theme', t);
+      localStorage.setItem('ubuhanga-theme', t);
+    }
+    themeBtn?.addEventListener('click', () => {
+      const next = getCurrentTheme() === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+    });
+  </script>
 
   <!-- Mobile menu toggle script -->
   <script>
     const btn  = document.getElementById('hamburger-btn');
     const menu = document.getElementById('mobile-menu');
     if (btn && menu) {
+      function closeMenu() {
+        btn.setAttribute('aria-expanded', 'false');
+        menu.setAttribute('aria-hidden', 'true');
+        menu.classList.remove('is-open');
+        document.body.classList.remove('menu-open');
+        btn.focus();
+      }
+
+      function openMenu() {
+        btn.setAttribute('aria-expanded', 'true');
+        menu.setAttribute('aria-hidden', 'false');
+        menu.classList.add('is-open');
+        document.body.classList.add('menu-open');
+        const firstLink = menu.querySelector('a');
+        if (firstLink) firstLink.focus();
+      }
+
       btn.addEventListener('click', () => {
         const open = btn.getAttribute('aria-expanded') === 'true';
-        btn.setAttribute('aria-expanded', String(!open));
-        menu.setAttribute('aria-hidden', String(open));
-        menu.classList.toggle('is-open', !open);
-        document.body.classList.toggle('menu-open', !open);
+        open ? closeMenu() : openMenu();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const open = btn.getAttribute('aria-expanded') === 'true';
+          if (open) closeMenu();
+        }
       });
     }
   </script>
@@ -460,6 +556,42 @@ body.menu-open { overflow: hidden; }
 }
 .site-footer__credit a { color: var(--color-text-secondary); }
 .site-footer__credit a:hover { color: var(--color-text-primary); }
+
+.site-footer__bottom-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.theme-toggle:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+.theme-toggle__icon--sun { display: block; }
+.theme-toggle__icon--moon { display: none; }
+
+:root[data-theme="dark"] .theme-toggle__icon--sun { display: none; }
+:root[data-theme="dark"] .theme-toggle__icon--moon { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle__icon--sun { display: none; }
+  :root:not([data-theme="light"]) .theme-toggle__icon--moon { display: block; }
+}
 
 /* ─── Responsive nav ─────────────────────────────────── */
 @media (max-width: 768px) {

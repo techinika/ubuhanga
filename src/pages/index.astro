@@ -8,129 +8,22 @@ import VideoCard from '../components/VideoCard.astro';
 import PlaylistCard from '../components/PlaylistCard.astro';
 import NewsletterForm from '../components/NewsletterForm.astro';
 import CategoryPill from '../components/CategoryPill.astro';
+import GoogleAd from '../components/GoogleAd.astro';
 
-// --- Firestore data fetching would live here ---
-// import { getFeaturedVideos, getPlaylists, getCategories } from '../lib/firestore';
-// const featuredVideos = await getFeaturedVideos(6);
-// const playlists = await getPlaylists(4);
-// const categories = await getCategories();
+import {
+  getFeaturedVideos,
+  getPlaylists,
+  getCategories,
+  getSiteStats,
+} from '../lib/firestore';
 
-// Placeholder data (replace with Firestore calls)
-const featuredVideos = [
-  {
-    id: '1',
-    title: 'Build a REST API with Node.js and Express from Scratch',
-    thumbnail: 'https://img.youtube.com/vi/fgTGADljAeg/maxresdefault.jpg',
-    youtubeId: 'fgTGADljAeg',
-    duration: '42:18',
-    views: '12.4K',
-    category: 'Node.js',
-    publishedAt: '2024-03-15',
-    slug: 'build-rest-api-nodejs-express',
-  },
-  {
-    id: '2',
-    title: 'React Hooks Explained: useState, useEffect & useContext',
-    thumbnail: 'https://img.youtube.com/vi/dpw9EHDh2bM/maxresdefault.jpg',
-    youtubeId: 'dpw9EHDh2bM',
-    duration: '35:04',
-    views: '9.1K',
-    category: 'React',
-    publishedAt: '2024-02-20',
-    slug: 'react-hooks-explained',
-  },
-  {
-    id: '3',
-    title: 'Introduction to Docker: Containers for Beginners',
-    thumbnail: 'https://img.youtube.com/vi/pTFZFxd5sRs/maxresdefault.jpg',
-    youtubeId: 'pTFZFxd5sRs',
-    duration: '58:22',
-    views: '21.7K',
-    category: 'DevOps',
-    publishedAt: '2024-01-10',
-    slug: 'intro-to-docker-containers',
-  },
-  {
-    id: '4',
-    title: 'PostgreSQL Full Course — From Zero to Pro',
-    thumbnail: 'https://img.youtube.com/vi/qw--VYLpxG4/maxresdefault.jpg',
-    youtubeId: 'qw--VYLpxG4',
-    duration: '1:14:09',
-    views: '7.3K',
-    category: 'Databases',
-    publishedAt: '2023-12-05',
-    slug: 'postgresql-full-course',
-  },
-  {
-    id: '5',
-    title: 'Python for Automation: Scripts That Save You Hours',
-    thumbnail: 'https://img.youtube.com/vi/s3LvV-KJlXk/maxresdefault.jpg',
-    youtubeId: 's3LvV-KJlXk',
-    duration: '29:47',
-    views: '15.9K',
-    category: 'Python',
-    publishedAt: '2023-11-14',
-    slug: 'python-for-automation',
-  },
-  {
-    id: '6',
-    title: 'Git & GitHub: The Complete Workflow Guide',
-    thumbnail: 'https://img.youtube.com/vi/RGOj5yH7evk/maxresdefault.jpg',
-    youtubeId: 'RGOj5yH7evk',
-    duration: '47:30',
-    views: '33.2K',
-    category: 'Git',
-    publishedAt: '2023-10-22',
-    slug: 'git-github-complete-workflow',
-  },
-];
-
-const playlists = [
-  {
-    id: 'p1',
-    title: 'Full-Stack Web Development',
-    description: 'Build complete web applications from frontend to backend, covering HTML, CSS, JS, Node, and databases.',
-    videoCount: 18,
-    thumbnail: 'https://img.youtube.com/vi/fgTGADljAeg/maxresdefault.jpg',
-    slug: 'full-stack-web-development',
-    tags: ['HTML', 'CSS', 'Node.js', 'React'],
-  },
-  {
-    id: 'p2',
-    title: 'DevOps & Cloud Fundamentals',
-    description: 'Learn Docker, CI/CD pipelines, and cloud deployment strategies for modern software teams.',
-    videoCount: 12,
-    thumbnail: 'https://img.youtube.com/vi/pTFZFxd5sRs/maxresdefault.jpg',
-    slug: 'devops-cloud-fundamentals',
-    tags: ['Docker', 'Linux', 'CI/CD', 'AWS'],
-  },
-  {
-    id: 'p3',
-    title: 'Python Mastery Series',
-    description: 'From Python basics to advanced topics like decorators, async/await, and building real-world projects.',
-    videoCount: 22,
-    thumbnail: 'https://img.youtube.com/vi/s3LvV-KJlXk/maxresdefault.jpg',
-    slug: 'python-mastery-series',
-    tags: ['Python', 'OOP', 'Automation', 'APIs'],
-  },
-  {
-    id: 'p4',
-    title: 'Database Design & SQL',
-    description: 'Master relational databases, schema design, query optimization, and ORMs.',
-    videoCount: 9,
-    thumbnail: 'https://img.youtube.com/vi/qw--VYLpxG4/maxresdefault.jpg',
-    slug: 'database-design-sql',
-    tags: ['SQL', 'PostgreSQL', 'MongoDB', 'ORM'],
-  },
-];
-
-const categories = [
-  'All', 'React', 'Node.js', 'Python', 'DevOps', 'Databases', 'Git', 'TypeScript', 'Linux', 'APIs',
-];
-
+const featuredVideos = await getFeaturedVideos(6);
+const playlists = await getPlaylists(4);
+const categories = await getCategories();
+const siteStats = await getSiteStats();
 const stats = {
-  totalVideos: 94,
-  totalPlaylists: 12,
+  totalVideos: siteStats.totalVideos,
+  totalPlaylists: siteStats.totalPlaylists,
   totalHours: 140,
 };
 ---
@@ -190,7 +83,7 @@ const stats = {
   ════════════════════════════════════════ -->
   <section class="categories-bar" aria-label="Filter by category">
     <div class="container">
-      <div class="categories-bar__scroll" role="list">
+      <div class="categories-bar__scroll" role="list" id="home-categories">
         {categories.map((cat) => (
           <CategoryPill label={cat} active={cat === 'All'} />
         ))}
@@ -216,9 +109,11 @@ const stats = {
         </a>
       </div>
 
-      <div class="video-grid" role="list">
+      <div class="video-grid" role="list" id="featured-grid">
         {featuredVideos.map((video) => (
-          <VideoCard video={video} />
+          <div data-categories={video.category}>
+            <VideoCard video={video} />
+          </div>
         ))}
       </div>
     </div>
@@ -249,6 +144,11 @@ const stats = {
       </div>
     </div>
   </section>
+
+  <!-- ═══════════════════════════════════════
+       AD
+  ════════════════════════════════════════ -->
+  <GoogleAd slot="HOME_BETWEEN_SECTIONS" format="horizontal" className="ad-section" />
 
   <!-- ═══════════════════════════════════════
        ABOUT STRIP
@@ -335,6 +235,11 @@ const stats = {
   </section>
 
 </BaseLayout>
+
+<script>
+  import { initCategoryFilter } from '../lib/category-filter';
+  initCategoryFilter('#home-categories', '#featured-grid > *');
+</script>
 
 <style>
 /* ═══════════════════════════════════════

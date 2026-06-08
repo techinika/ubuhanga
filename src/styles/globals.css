@@ -3,9 +3,6 @@
    Warm & approachable tech archive
 ════════════════════════════════════════════════════════════ */
 
-/* Google Fonts — Display + Body */
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;1,700&family=Inter:wght@400;500;600;700&display=swap");
-
 /* ─── Reset ─────────────────────────────────────────────── */
 *,
 *::before,
@@ -35,7 +32,7 @@ textarea {
 /* ─── Tokens ─────────────────────────────────────────────── */
 :root {
   /* Fonts */
-  --font-display: "Fraunces", Georgia, serif;
+  --font-display: "Lexend", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
 
   /* Palette — Amber */
@@ -109,26 +106,74 @@ textarea {
   --transition-slow: 350ms ease;
 }
 
-/* Dark mode tokens */
+/* ─── Dark theme values (shared) ────────────────────────── */
+:root {
+  --dark-bg: #161410;
+  --dark-surface-warm: #1c1a14;
+  --dark-border: rgba(255, 255, 255, 0.09);
+  --dark-border-strong: rgba(255, 255, 255, 0.16);
+  --dark-text-primary: #f4f2ec;
+  --dark-text-secondary: #a8a499;
+  --dark-text-muted: #706d65;
+  --dark-accent: var(--color-amber-400);
+  --dark-accent-hover: var(--color-amber-300);
+  --dark-grid-line: rgba(255, 255, 255, 0.04);
+  --dark-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  --dark-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode — system preference */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #161410;
-    --color-surface-warm: #1c1a14;
-    --color-border: rgba(255, 255, 255, 0.09);
-    --color-border-strong: rgba(255, 255, 255, 0.16);
-
-    --color-text-primary: #f4f2ec;
-    --color-text-secondary: #a8a499;
-    --color-text-muted: #706d65;
-
-    --color-accent: var(--color-amber-400);
-    --color-accent-hover: var(--color-amber-300);
-    --color-grid-line: rgba(255, 255, 255, 0.04);
-
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
-    --shadow-card-hover:
-      0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.3);
+  :root:not([data-theme="light"]) {
+    --color-bg: var(--dark-bg);
+    --color-surface-warm: var(--dark-surface-warm);
+    --color-border: var(--dark-border);
+    --color-border-strong: var(--dark-border-strong);
+    --color-text-primary: var(--dark-text-primary);
+    --color-text-secondary: var(--dark-text-secondary);
+    --color-text-muted: var(--dark-text-muted);
+    --color-accent: var(--dark-accent);
+    --color-accent-hover: var(--dark-accent-hover);
+    --color-grid-line: var(--dark-grid-line);
+    --shadow-card: var(--dark-shadow-card);
+    --shadow-card-hover: var(--dark-shadow-card-hover);
   }
+}
+
+/* Dark mode — manual override */
+:root[data-theme="dark"] {
+  --color-bg: var(--dark-bg);
+  --color-surface-warm: var(--dark-surface-warm);
+  --color-border: var(--dark-border);
+  --color-border-strong: var(--dark-border-strong);
+  --color-text-primary: var(--dark-text-primary);
+  --color-text-secondary: var(--dark-text-secondary);
+  --color-text-muted: var(--dark-text-muted);
+  --color-accent: var(--dark-accent);
+  --color-accent-hover: var(--dark-accent-hover);
+  --color-grid-line: var(--dark-grid-line);
+  --shadow-card: var(--dark-shadow-card);
+  --shadow-card-hover: var(--dark-shadow-card-hover);
+}
+
+/* Manual light mode override */
+:root[data-theme="light"] {
+  --color-bg: #ffffff;
+  --color-surface-warm: #fafaf8;
+  --color-border: #e8e6df;
+  --color-border-strong: #d4d0c8;
+
+  --color-text-primary: #16140f;
+  --color-text-secondary: #5a5750;
+  --color-text-muted: #7c7870;
+
+  --color-accent: var(--color-amber-600);
+  --color-accent-hover: var(--color-amber-700);
+  --color-grid-line: rgba(0, 0, 0, 0.05);
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.07), 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover:
+    0 4px 12px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
 /* ─── Base ───────────────────────────────────────────────── */

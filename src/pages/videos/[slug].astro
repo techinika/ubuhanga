@@ -5,15 +5,20 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import VideoCard from '../../components/VideoCard.astro';
 import CommentSection from '../../components/CommentSection.astro';
-import { videos, getVideoBySlug, getPlaylistForVideo } from '../../lib/data';
+import GoogleAd from '../../components/GoogleAd.astro';
+import {
+  getVideoBySlug,
+  getPlaylistById,
+  getFeaturedVideos,
+} from '../../lib/firestore';
 
 const { slug } = Astro.params;
-const video = getVideoBySlug(slug!);
-const playlist = getPlaylistForVideo(video?.playlistId);
+const video = await getVideoBySlug(slug!);
+const playlist = video?.playlistId ? await getPlaylistById(video.playlistId) : null;
 
 const related = video
-  ? videos
-      .filter((v) => v.slug !== video.slug && v.category === video.category)
+  ? (await getFeaturedVideos(4, video.category))
+      .filter((v) => v.slug !== video.slug)
       .slice(0, 3)
   : [];
 ---
@@ -22,18 +27,52 @@ const related = video
   title={video ? `${video.title} — Ubuhanga` : 'Video not found — Ubuhanga'}
   description={video?.description ?? 'This video could not be found.'}
   ogImage={video ? `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg` : undefined}
+  articlePublishedTime={video?.publishedAt}
+  canonicalURL={video ? `https://ubuhanga.dev/videos/${video.slug}` : undefined}
 >
 
-{video ? (
+  {video ? (
   <>
-    <article class="video-page">
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "VideoObject",
+      "name": video.title,
+      "description": video.description,
+      "thumbnailUrl": `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`,
+      "embedUrl": `https://www.youtube-nocookie.com/embed/${video.youtubeId}`,
+      "uploadDate": video.publishedAt,
+      "duration": `PT${video.duration.replace(/^(\d+):(\d+)$/, (_, m, s) => `0H${String(m).padStart(2, '0')}M${String(s).padStart(2, '0')}S`).replace(/^(\d+):(\d+):(\d+)$/, (_, h, m, s) => `${String(h).padStart(2, '0')}H${String(m).padStart(2, '0')}M${String(s).padStart(2, '0')}S`)}`,
+      "author": { "@type": "Organization", "name": "Ubuhanga" },
+      "contentUrl": `https://www.youtube-nocookie.com/embed/${video.youtubeId}`,
+      "interactionStatistic": {
+        "@type": "InteractionCounter",
+        "interactionType": "WatchAction",
+        "userInteractionCount": video.views,
+      },
+    })} />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Videos", "item": "https://ubuhanga.dev/videos" },
+        { "@type": "ListItem", "position": 2, "name": video.title, "item": `https://ubuhanga.dev/videos/${video.slug}` },
+      ],
+    })} />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "VideoGallery",
+      "name": "More in " + video.category,
+      "description": "Related videos in the " + video.category + " category",
+      "url": "https://ubuhanga.dev/videos",
+    })} />
+    <article class="video-page" data-video-id={video.id}>
       <div class="container video-page__layout">
 
         <div class="video-page__main">
           <div class="video-page__player">
             <iframe
               class="video-page__iframe"
-              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
+              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0`}
               title={video.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen
@@ -92,6 +131,7 @@ const related = video
         </div>
 
         <aside class="video-page__sidebar" aria-label="Related videos">
+          <GoogleAd slot="VIDEO_SIDEBAR" format="rectangle" className="ad-sidebar" />
           {related.length > 0 && (
             <div class="video-page__related">
               <h2 class="video-page__related-title">More in {video.category}</h2>
@@ -128,8 +168,10 @@ const related = video
     try {
       const db = getFirebaseDB();
       const videoRef = doc(db, 'videos', vidId);
-      updateDoc(videoRef, { views: increment(1) }).catch(() => {});
-    } catch {}
+      await updateDoc(videoRef, { views: increment(1) });
+    } catch (e) {
+      console.error('Failed to increment view count:', e);
+    }
   }
 </script>
 

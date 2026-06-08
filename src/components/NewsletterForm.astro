@@ -65,24 +65,10 @@
 
 <!-- Firebase SDK (loaded only when this component mounts) -->
 <script>
-  import { initializeApp, getApps } from 'firebase/app';
-  import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+  import { getFirebaseDB } from '../../lib/firebase-client';
+  import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
-  // ─────────────────────────────────────────────────
-  // 🔧 Replace with your Firebase project config
-  // ─────────────────────────────────────────────────
-  const firebaseConfig = {
-    apiKey:            import.meta.env.PUBLIC_FIREBASE_API_KEY,
-    authDomain:        import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId:         import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket:     import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId:             import.meta.env.PUBLIC_FIREBASE_APP_ID,
-  };
-
-  // Avoid re-initializing if hot-reloaded
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  const db  = getFirestore(app);
+  const db  = getFirebaseDB();
 
   const form    = document.getElementById('newsletter-form') as HTMLFormElement;
   const success = document.getElementById('newsletter-success') as HTMLDivElement;

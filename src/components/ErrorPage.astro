@@ -1,0 +1,53 @@
+---
+interface Props {
+  code: string;
+  title: string;
+  description: string;
+}
+
+const { code, title, description } = Astro.props;
+---
+
+<section class="error-page">
+  <div class="container">
+    <span class="error-page__code">{code}</span>
+    <h1 class="error-page__title">{title}</h1>
+    <p class="error-page__text">{description}</p>
+    <a href="/" class="btn btn--primary">Go home</a>
+  </div>
+</section>
+
+<style>
+.error-page {
+  text-align: center;
+  padding: 8rem 0;
+}
+
+.error-page__code {
+  font-family: var(--font-display);
+  font-size: 6rem;
+  font-weight: 800;
+  color: var(--color-amber-600);
+  line-height: 1;
+  display: block;
+  margin-bottom: 1rem;
+  letter-spacing: -0.04em;
+}
+
+.error-page__title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.error-page__text {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+  max-width: 40ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>

@@ -1,0 +1,41 @@
+---
+// src/components/GoogleAd.astro
+// Google AdSense — responsive display ad unit
+// Usage: <GoogleAd slot="1234567890" />
+// Create ad units in your AdSense dashboard, then replace slot values.
+
+interface Props {
+  slot: string;
+  format?: 'auto' | 'rectangle' | 'horizontal' | 'vertical';
+  className?: string;
+}
+
+const { slot, format = 'auto', className = '' } = Astro.props;
+const adClient = import.meta.env.PUBLIC_ADSENSE_ID;
+---
+
+{adClient && (
+  <div class={`ad-container ${className}`}>
+    <ins
+      class="adsbygoogle"
+      style="display:block"
+      data-ad-client={adClient}
+      data-ad-slot={slot}
+      data-ad-format={format}
+      data-full-width-responsive="true"
+    />
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+)}
+
+<style>
+  .ad-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    overflow: hidden;
+  }
+</style>

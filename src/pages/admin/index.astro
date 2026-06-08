@@ -4,8 +4,14 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Admin — Ubuhanga" description="Admin dashboard" noIndex>
+<BaseLayout title="Admin — Ubuhanga" description="Manage videos, playlists, and categories on Ubuhanga." noIndex>
   <div class="admin" id="admin-root">
+    <!-- Loading state (shown while checking auth) -->
+    <div id="admin-loading" class="admin__loading-initial">
+      <div class="admin__loading-spinner"></div>
+      <p>Checking access...</p>
+    </div>
+
     <!-- Auth gate -->
     <div id="admin-auth" class="admin__auth" hidden>
       <div class="admin__auth-card">
@@ -109,20 +115,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
   import {
     collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc,
-    query, orderBy, serverTimestamp,
+    query, orderBy,
   } from 'firebase/firestore';
+  import { escapeHtml } from '../../lib/helpers';
 
   const auth = getFirebaseAuth();
   const db = getFirebaseDB();
 
   // ─── State ─────────────────────────────────────────────
-  let currentUser: any = null;
+  let currentUser: import('firebase/auth').User | null = null;
   let isAdmin = false;
-  let videosCache: any[] = [];
-  let playlistsCache: any[] = [];
-  let categoriesCache: any[] = [];
+  let videosCache: Record<string, unknown>[] = [];
+  let playlistsCache: Record<string, unknown>[] = [];
+  let categoriesCache: Record<string, unknown>[] = [];
 
   // ─── DOM refs ──────────────────────────────────────────
+  const loadingEl = document.getElementById('admin-loading')!;
   const authGate = document.getElementById('admin-auth')!;
   const dashboard = document.getElementById('admin-dashboard')!;
   const emailEl = document.getElementById('admin-email')!;
@@ -137,13 +145,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     try {
       errorEl.hidden = true;
       await signInWithPopup(auth, googleProvider);
-    } catch (err: any) {
-      errorEl.textContent = err.message || 'Sign-in failed.';
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Sign-in failed.';
+      errorEl.textContent = msg;
       errorEl.hidden = false;
     }
   });
 
   document.getElementById('admin-signout')?.addEventListener('click', () => signOut(auth));
+
+  function resolveAuth(user: import('firebase/auth').User | null, admin: boolean) {
+    loadingEl.hidden = true;
+    if (admin) {
+      authGate.hidden = true;
+      dashboard.hidden = false;
+    } else {
+      authGate.hidden = false;
+      dashboard.hidden = true;
+    }
+  }
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
@@ -152,27 +172,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       await checkAdmin(user);
     } else {
       isAdmin = false;
-      authGate.hidden = false;
-      dashboard.hidden = true;
+      resolveAuth(null, false);
     }
   });
 
-  async function checkAdmin(user: any) {
+  async function checkAdmin(user: import('firebase/auth').User) {
     try {
       const adminRef = doc(db, 'admins', user.uid);
       const snap = await getDoc(adminRef);
       isAdmin = snap.exists();
-    } catch { isAdmin = false; }
+    } catch (e) { console.error('Admin check failed:', e); isAdmin = false; }
 
     if (isAdmin) {
-      authGate.hidden = true;
-      dashboard.hidden = false;
+      resolveAuth(user, true);
       loadAll();
     } else {
       errorEl.textContent = 'This account does not have admin access.';
       errorEl.hidden = false;
-      authGate.hidden = false;
-      dashboard.hidden = true;
+      await signOut(auth);
     }
   }
 
@@ -196,15 +213,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     modalTitle.textContent = title;
     modalBody.innerHTML = html;
     modal.hidden = false;
+    const firstInput = modal.querySelector('input, textarea, select, button');
+    if (firstInput) firstInput.focus();
   }
 
   function closeModal() {
     modal.hidden = true;
     modalBody.innerHTML = '';
+    document.getElementById('admin-root')?.focus();
   }
 
   modalClose?.addEventListener('click', closeModal);
   modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) {
+      closeModal();
+    }
+  });
 
   // ─── Load all data ─────────────────────────────────────
   async function loadAll() {
@@ -225,7 +251,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       videosCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderVideos();
       loading.hidden = true;
-    } catch { loading.textContent = 'Failed to load.'; }
+    } catch (e) { console.error('Failed to load videos:', e); loading.textContent = 'Failed to load.'; }
   }
 
   function renderVideos() {
@@ -327,12 +353,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     document.getElementById('video-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const errEl = document.getElementById('video-form-error')!;
       const fd = new FormData(e.target as HTMLFormElement);
-      const data: any = {};
+      const data: Record<string, unknown> = {};
       fd.forEach((val, key) => { data[key] = val; });
-      if (data.tags) data.tags = data.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
-      else data.tags = [];
-      if (!data.slug) data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+      if (!data.youtubeId || !/^[a-zA-Z0-9_-]{11}$/.test(data.youtubeId as string)) {
+        errEl.textContent = 'YouTube ID must be exactly 11 alphanumeric characters.';
+        errEl.hidden = false;
+        return;
+      }
+
+      if (!data.duration || !/^\d{1,2}:\d{2}$/.test(data.duration as string)) {
+        errEl.textContent = 'Duration must be in MM:SS format (e.g. 42:18).';
+        errEl.hidden = false;
+        return;
+      }
+
+      if (!data.slug) data.slug = (data.title as string).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       if (!data.thumbnail) data.thumbnail = `https://img.youtube.com/vi/${data.youtubeId}/maxresdefault.jpg`;
       data.views = v?.views ?? 0;
 
@@ -344,9 +382,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         }
         closeModal();
         await loadVideos();
-      } catch (err: any) {
-        const errEl = document.getElementById('video-form-error')!;
-        errEl.textContent = err.message || 'Failed to save.';
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to save.';
+        errEl.textContent = msg;
         errEl.hidden = false;
       }
     });
@@ -361,7 +399,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     try {
       await deleteDoc(doc(db, 'videos', id));
       await loadVideos();
-    } catch { alert('Failed to delete.'); }
+    } catch (e) { console.error('Failed to delete video:', e); alert('Failed to delete.'); }
   }
 
   // ═══════════════════════════════════════════════════════
@@ -378,7 +416,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       playlistsCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderPlaylists();
       loading.hidden = true;
-    } catch { loading.textContent = 'Failed to load.'; }
+    } catch (e) { console.error('Failed to load playlists:', e); loading.textContent = 'Failed to load.'; }
   }
 
   function renderPlaylists() {
@@ -447,11 +485,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('playlist-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target as HTMLFormElement);
-      const data: any = {};
+      const data: Record<string, unknown> = {};
       fd.forEach((val, key) => { data[key] = val; });
-      if (data.tags) data.tags = data.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
+      if (data.tags) data.tags = (data.tags as string).split(',').map((t: string) => t.trim()).filter(Boolean);
       else data.tags = [];
-      if (!data.slug) data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      if (!data.slug) data.slug = (data.title as string).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
       try {
         if (editId) {
@@ -461,9 +499,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         }
         closeModal();
         await loadPlaylists();
-      } catch (err: any) {
+      } catch (err) {
         const errEl = document.getElementById('playlist-form-error')!;
-        errEl.textContent = err.message || 'Failed to save.';
+        const msg = err instanceof Error ? err.message : 'Failed to save.';
+        errEl.textContent = msg;
         errEl.hidden = false;
       }
     });
@@ -476,7 +515,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     try {
       await deleteDoc(doc(db, 'playlists', id));
       await loadPlaylists();
-    } catch { alert('Failed to delete.'); }
+    } catch (e) { console.error('Failed to delete playlist:', e); alert('Failed to delete.'); }
   }
 
   // ═══════════════════════════════════════════════════════
@@ -493,7 +532,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       categoriesCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderCategories();
       loading.hidden = true;
-    } catch { loading.textContent = 'Failed to load.'; }
+    } catch (e) { console.error('Failed to load categories:', e); loading.textContent = 'Failed to load.'; }
   }
 
   function renderCategories() {
@@ -517,12 +556,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     );
   }
 
-  document.getElementById('category-add-btn')?.addEventListener('click', () => {
+  document.getElementById('category-add-btn')?.addEventListener('click', async () => {
     const name = prompt('Category name:');
     if (!name?.trim()) return;
-    addDoc(collection(db, 'categories'), { name: name.trim() })
-      .then(() => loadCategories())
-      .catch(() => alert('Failed to add.'));
+    try {
+      await addDoc(collection(db, 'categories'), { name: name.trim() });
+      await loadCategories();
+    } catch (e) {
+      console.error('Failed to add category:', e);
+      alert('Failed to add.');
+    }
   });
 
   async function deleteCategory(id: string) {
@@ -530,22 +573,41 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     try {
       await deleteDoc(doc(db, 'categories', id));
       await loadCategories();
-    } catch { alert('Failed to delete.'); }
+    } catch (e) { console.error('Failed to delete category:', e); alert('Failed to delete.'); }
   }
 
   // ─── Helpers ──────────────────────────────────────────
-  function esc(s: string): string {
-    const div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
-  }
+  const esc = escapeHtml;
 </script>
 
-<style>
+<style is:global>
 /* ─── Admin layout ──────────────────────────────────── */
 .admin {
   min-height: 60vh;
 }
+
+/* Initial loading state */
+.admin__loading-initial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 6rem 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.admin__loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-amber-600);
+  border-radius: 50%;
+  animation: admin-spin 0.7s linear infinite;
+}
+
+@keyframes admin-spin { to { transform: rotate(360deg); } }
 
 /* Auth gate */
 .admin__auth {
