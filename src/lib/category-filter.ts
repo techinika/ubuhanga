@@ -18,7 +18,7 @@ export function initCategoryFilter(
 
       items.forEach((item) => {
         const cats = item.getAttribute('data-categories') || '';
-        item.hidden = cat !== 'All' && !cats.split(',').map((c) => c.trim()).includes(cat);
+        item.hidden = cat !== null && cat !== 'All' && !cats.split(',').map((c) => c.trim()).includes(cat);
       });
     });
   });

@@ -236,10 +236,14 @@
 
 /* Success */
 .newsletter-success {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.4rem;
+}
+
+.newsletter-success:not([hidden]) {
+  display: flex;
 }
 
 .newsletter-success__title {

@@ -39,13 +39,13 @@ src/
 │   ├── EmptyState.astro         # Reusable empty state with icon
 │   ├── ErrorPage.astro          # Shared 404/500 layout
 │   ├── GoogleAd.astro           # AdSense unit wrapper
-│   ├── NewsletterForm.astro     # Firestore subscription form
+│   ├── NewsletterForm.astro     # Firestore subscription form (success state hidden via CSS `display: none` until confirmed)
 │   ├── PlaylistCard.astro
 │   └── VideoCard.astro
 ├── layouts/
 │   └── BaseLayout.astro         # SEO head, OG, schema.org, nav, footer, theme toggle
 ├── lib/
-│   ├── category-filter.ts       # Shared JS for category pill filtering
+│   ├── category-filter.ts       # Shared JS for category pill filtering (handles null data-category)
 │   ├── firebase-client.ts       # Singleton Firebase client (auth + firestore)
 │   ├── firestore.ts             # Server-side Firebase Admin helpers
 │   └── helpers.ts               # escapeHtml shared utility
@@ -94,10 +94,11 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 
 | Command | Action |
 |---|---|
-| `npm install` | Install dependencies |
-| `npm run dev` | Start local dev server at `localhost:4321` |
-| `npm run build` | Build for production (Vercel SSR output) |
-| `npm run preview` | Preview production build locally |
+| `pnpm install` | Install dependencies |
+| `pnpm dev` | Start local dev server at `localhost:4321` |
+| `pnpm build` | Build for production (Vercel SSR output) |
+| `pnpm preview` | Preview production build locally |
+| `pnpm tsc --noEmit` | TypeScript type check |
 
 ## Admin access
 
