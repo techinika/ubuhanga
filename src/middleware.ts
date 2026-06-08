@@ -20,7 +20,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://img.youtube.com https://*.ytimg.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://*",
   "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
-  "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com wss://*.firebaseio.com https://*.google.com https://*.googleadservices.com https://*.doubleclick.net ep1.adtrafficquality.google https://pagead2.googlesyndication.com",
+  "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com wss://*.firebaseio.com https://*.google.com https://*.googleadservices.com https://*.doubleclick.net ep1.adtrafficquality.google https://pagead2.googlesyndication.com https://www.google-analytics.com",
   "font-src 'self'",
   "media-src 'self'",
   "manifest-src 'self'",

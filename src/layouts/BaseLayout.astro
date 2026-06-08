@@ -111,6 +111,24 @@ const siteURL = SITE_URL;
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.PUBLIC_ADSENSE_ID}`}
       crossorigin="anonymous"></script>
 
+    <!-- Google Analytics 4 -->
+    <script is:inline>
+      (function () {
+        const id = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+        if (!id) return;
+        const s = document.createElement("script");
+        s.async = true;
+        s.src = "https://www.googletagmanager.com/gtag/js?id=" + id;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          window.dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
+        gtag("config", id);
+      })();
+    </script>
+
     <!-- Structured Data — Organization -->
     <script is:inline
       type="application/ld+json"
