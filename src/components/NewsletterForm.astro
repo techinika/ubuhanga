@@ -65,7 +65,7 @@
 
 <!-- Firebase SDK (loaded only when this component mounts) -->
 <script>
-  import { getFirebaseDB } from '../../lib/firebase-client';
+  import { getFirebaseDB } from '../lib/firebase-client';
   import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
   const db  = getFirebaseDB();
