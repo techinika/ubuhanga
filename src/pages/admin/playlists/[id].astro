@@ -55,7 +55,7 @@ const data = snap.data()!;
   import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
   import { slugify, parseTags } from "@/lib/helpers";
   import { onAuthStateChanged } from "firebase/auth";
-  import { doc, updateDoc } from "firebase/firestore";
+  import { doc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 
   const auth = getFirebaseAuth();
   const db = getFirebaseDB();
@@ -79,9 +79,56 @@ const data = snap.data()!;
       formData[key] = val;
     });
 
-    formData.tags = formData.tags ? parseTags(formData.tags as string) : [];
+    if ((formData.title as string).length > 150) {
+      errEl.textContent = "Title must be 150 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
+    if ((formData.description as string).length > 2000) {
+      errEl.textContent = "Description must be 2000 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
     if (!formData.slug) {
       formData.slug = slugify(formData.title as string);
+    }
+    if ((formData.slug as string).length > 100) {
+      errEl.textContent = "Slug must be 100 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
+    if ((formData.thumbnail as string) && (formData.thumbnail as string).length > 500) {
+      errEl.textContent = "Thumbnail URL must be 500 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
+    const tags: string[] = formData.tags ? parseTags(formData.tags as string) : [];
+    if (tags.length > 10) {
+      errEl.textContent = "Maximum 10 tags allowed.";
+      errEl.hidden = false;
+      return;
+    }
+    for (const tag of tags) {
+      if (tag.length > 50) {
+        errEl.textContent = "Each tag must be 50 characters or fewer.";
+        errEl.hidden = false;
+        return;
+      }
+    }
+    formData.tags = tags;
+
+    const slug = (formData.slug as string) || slugify(formData.title as string);
+    formData.slug = slug;
+    const slugQuery = query(
+      collection(db, "playlists"),
+      where("slug", "==", slug),
+      where("__name__", "!=", playlistId)
+    );
+    const slugSnap = await getDocs(slugQuery);
+    if (!slugSnap.empty) {
+      errEl.textContent = "A playlist with this slug already exists.";
+      errEl.hidden = false;
+      return;
     }
 
     try {

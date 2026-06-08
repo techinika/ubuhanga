@@ -74,7 +74,7 @@ const playlists = await getPlaylists();
   import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
   import { slugify, parseTags } from "@/lib/helpers";
   import { onAuthStateChanged } from "firebase/auth";
-  import { collection, addDoc } from "firebase/firestore";
+  import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 
   const auth = getFirebaseAuth();
   const db = getFirebaseDB();
@@ -112,8 +112,51 @@ const playlists = await getPlaylists();
     if (!data.thumbnail) {
       data.thumbnail = `https://img.youtube.com/vi/${data.youtubeId}/maxresdefault.jpg`;
     }
-    data.tags = data.tags ? parseTags(data.tags as string) : [];
+    if ((data.title as string).length > 150) {
+      errEl.textContent = "Title must be 150 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
+    if ((data.description as string).length > 2000) {
+      errEl.textContent = "Description must be 2000 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
+    if ((data.slug as string) && (data.slug as string).length > 100) {
+      errEl.textContent = "Slug must be 100 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
+    if ((data.thumbnail as string) && (data.thumbnail as string).length > 500) {
+      errEl.textContent = "Thumbnail URL must be 500 characters or fewer.";
+      errEl.hidden = false;
+      return;
+    }
+    const tags: string[] = data.tags ? parseTags(data.tags as string) : [];
+    if (tags.length > 10) {
+      errEl.textContent = "Maximum 10 tags allowed.";
+      errEl.hidden = false;
+      return;
+    }
+    for (const tag of tags) {
+      if (tag.length > 50) {
+        errEl.textContent = "Each tag must be 50 characters or fewer.";
+        errEl.hidden = false;
+        return;
+      }
+    }
+    data.tags = tags;
     data.views = 0;
+
+    const slug = (data.slug as string) || slugify(data.title as string);
+    data.slug = slug;
+    const slugQuery = query(collection(db, "videos"), where("slug", "==", slug));
+    const slugSnap = await getDocs(slugQuery);
+    if (!slugSnap.empty) {
+      errEl.textContent = "A video with this slug already exists.";
+      errEl.hidden = false;
+      return;
+    }
 
     try {
       await addDoc(collection(db, "videos"), data);

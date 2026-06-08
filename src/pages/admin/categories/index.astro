@@ -69,6 +69,17 @@ const categories = snap.docs.map((d) => ({ id: d.id, name: d.data().name }));
   document.getElementById("category-add-btn")?.addEventListener("click", async () => {
     const name = prompt("Category name:");
     if (!name?.trim()) return;
+    if (name.trim().length > 50) {
+      alert("Category name must be 50 characters or fewer.");
+      return;
+    }
+    const existing = document.querySelectorAll(".admin-category-item span");
+    for (const el of existing) {
+      if (el.textContent?.toLowerCase() === name.trim().toLowerCase()) {
+        alert("Category already exists.");
+        return;
+      }
+    }
     try {
       const ref = await addDoc(collection(db, "categories"), { name: name.trim() });
       const list = document.getElementById("categories-list");
