@@ -27,7 +27,7 @@ function getAdminApp() {
   });
 }
 
-function getDB() {
+export function getDB() {
   getAdminApp();
   return getFirestore();
 }

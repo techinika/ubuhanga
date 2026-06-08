@@ -1,0 +1,74 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getPlaylists } from "../../../lib/firestore";
+
+const playlists = await getPlaylists(100);
+---
+
+<AdminLayout title="Playlists — Admin — Ubuhanga" heading="Playlists">
+  <div class="admin-bar">
+    <p class="admin-bar__title">All playlists</p>
+    <a href="/admin/playlists/new" class="admin-btn admin-btn--primary">+ Add playlist</a>
+  </div>
+
+  {playlists.length === 0 ? (
+    <p class="admin-empty">No playlists yet.</p>
+  ) : (
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Videos</th>
+            <th>Tags</th>
+            <th class="admin-table__cell-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="playlists-tbody">
+          {playlists.map((p) => (
+            <tr>
+              <td class="admin-table__cell-title">{p.title}</td>
+              <td>{p.videoCount ?? 0}</td>
+              <td>{(p.tags || []).join(", ")}</td>
+              <td class="admin-table__cell-actions">
+                <a href={`/admin/playlists/${p.id}`} class="admin-btn-sm">Edit</a>
+                <button class="admin-btn-sm admin-btn-sm--danger" data-delete-playlist={p.id}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  import { getFirebaseDB } from "../../../lib/firebase-client";
+  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { doc, deleteDoc } from "firebase/firestore";
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "/admin"; return; }
+    initPage();
+  });
+
+  function initPage() {
+    document.querySelectorAll("[data-delete-playlist]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-delete-playlist")!;
+        if (!confirm("Delete this playlist?")) return;
+        try {
+          await deleteDoc(doc(db, "playlists", id));
+          btn.closest("tr")?.remove();
+        } catch (e) {
+          console.error("Failed to delete:", e);
+          alert("Failed to delete.");
+        }
+      });
+    });
+  }
+</script>

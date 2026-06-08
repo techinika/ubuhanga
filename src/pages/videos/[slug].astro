@@ -28,7 +28,7 @@ const related = video
   description={video?.description ?? 'This video could not be found.'}
   ogImage={video ? `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg` : undefined}
   articlePublishedTime={video?.publishedAt}
-  canonicalURL={video ? `https://ubuhanga.dev/videos/${video.slug}` : undefined}
+  canonicalURL={video ? `https://ubuhanga.techinika.com/videos/${video.slug}` : undefined}
 >
 
   {video ? (
@@ -54,8 +54,8 @@ const related = video
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Videos", "item": "https://ubuhanga.dev/videos" },
-        { "@type": "ListItem", "position": 2, "name": video.title, "item": `https://ubuhanga.dev/videos/${video.slug}` },
+        { "@type": "ListItem", "position": 1, "name": "Videos", "item": "https://ubuhanga.techinika.com/videos" },
+        { "@type": "ListItem", "position": 2, "name": video.title, "item": `https://ubuhanga.techinika.com/videos/${video.slug}` },
       ],
     })} />
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -63,7 +63,7 @@ const related = video
       "@type": "VideoGallery",
       "name": "More in " + video.category,
       "description": "Related videos in the " + video.category + " category",
-      "url": "https://ubuhanga.dev/videos",
+      "url": "https://ubuhanga.techinika.com/videos",
     })} />
     <article class="video-page" data-video-id={video.id}>
       <div class="container video-page__layout">

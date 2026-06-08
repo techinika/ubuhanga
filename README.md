@@ -8,7 +8,7 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 
 - **Framework:** [Astro](https://astro.build) v6 (SSR — `output: "server"`)
 - **Adapter:** `@astrojs/vercel`
-- **Auth:** Firebase Auth (Google sign-in for admin panel + comments)
+- **Auth:** Firebase Auth (Google sign-in for admin panel + comments), session cookies via Firebase Admin SDK
 - **Database:** Firebase Firestore (videos, playlists, categories, comments, subscribers)
 - **Ads:** Google AdSense (`ca-pub-1268572467254702`)
 - **Styling:** CSS custom properties with light/dark theme toggle (persisted to localStorage)
@@ -25,7 +25,10 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 | `/playlists/[slug]` | Single playlist — ordered video list with duration |
 | `/search` | Client-side search across all video fields |
 | `/about` | About Ubuhanga and Techinika |
-| `/admin` | Google Auth-gated CRUD for videos, playlists, categories |
+| `/admin` | Admin sign-in with Google |
+| `/admin/videos` | Manage videos (list, create, edit, delete) |
+| `/admin/playlists` | Manage playlists (list, create, edit, delete) |
+| `/admin/categories` | Manage categories |
 | `/rss.xml` | RSS feed of all videos |
 | `/sitemap.xml` | Dynamic sitemap (static pages + videos + playlists) |
 
@@ -39,16 +42,19 @@ src/
 │   ├── EmptyState.astro         # Reusable empty state with icon
 │   ├── ErrorPage.astro          # Shared 404/500 layout
 │   ├── GoogleAd.astro           # AdSense unit wrapper
-│   ├── NewsletterForm.astro     # Firestore subscription form (success state hidden via CSS `display: none` until confirmed)
+│   ├── NewsletterForm.astro     # Firestore subscription form
 │   ├── PlaylistCard.astro
 │   └── VideoCard.astro
 ├── layouts/
+│   ├── AdminLayout.astro        # Admin shell with sidebar nav and auth
 │   └── BaseLayout.astro         # SEO head, OG, schema.org, nav, footer, theme toggle
 ├── lib/
-│   ├── category-filter.ts       # Shared JS for category pill filtering (handles null data-category)
+│   ├── admin-auth.ts            # Server-side admin session verification
+│   ├── category-filter.ts       # Shared JS for category pill filtering
 │   ├── firebase-client.ts       # Singleton Firebase client (auth + firestore)
 │   ├── firestore.ts             # Server-side Firebase Admin helpers
 │   └── helpers.ts               # escapeHtml shared utility
+├── middleware.ts                # Auth middleware protecting /admin routes
 ├── pages/
 │   ├── index.astro
 │   ├── 404.astro
@@ -57,13 +63,26 @@ src/
 │   ├── search.astro
 │   ├── rss.xml.ts
 │   ├── sitemap.xml.ts
-│   ├── admin/index.astro
+│   ├── api/admin/session.ts     # Session cookie create/delete endpoint
+│   ├── admin/
+│   │   ├── index.astro          # Sign-in page
+│   │   ├── videos/
+│   │   │   ├── index.astro      # Video list
+│   │   │   ├── new.astro        # Create video
+│   │   │   └── [id].astro       # Edit video
+│   │   ├── playlists/
+│   │   │   ├── index.astro      # Playlist list
+│   │   │   ├── new.astro        # Create playlist
+│   │   │   └── [id].astro       # Edit playlist
+│   │   └── categories/
+│   │       └── index.astro      # Manage categories
 │   ├── videos/
 │   │   ├── index.astro
 │   │   └── [slug].astro
 │   └── playlists/
 │       ├── index.astro
 │       └── [slug].astro
+├── env.d.ts                     # App.Locals type declarations
 └── styles/
     └── globals.css              # Design tokens, CSS reset, light/dark modes, buttons
 ```
@@ -105,7 +124,8 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 1. Navigate to `/admin`
 2. Sign in with a Google account
 3. The account's UID must exist as a document in the `admins` Firestore collection
-4. Once authorized, manage videos, playlists, and categories via the dashboard
+4. Once authorized, a session cookie is created and you are redirected to `/admin/videos`
+5. Use the sidebar to navigate between videos, playlists, and categories management
 
 ## Firestore collections
 

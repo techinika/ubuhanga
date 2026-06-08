@@ -26,7 +26,7 @@ const durationLabel = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${total
   title={playlist ? `${playlist.title} — Ubuhanga` : 'Playlist not found — Ubuhanga'}
   description={playlist?.description ?? 'This playlist could not be found.'}
   ogImage={playlist?.thumbnail}
-  canonicalURL={playlist ? `https://ubuhanga.dev/playlists/${playlist.slug}` : undefined}
+  canonicalURL={playlist ? `https://ubuhanga.techinika.com/playlists/${playlist.slug}` : undefined}
 >
 
 {playlist ? (
@@ -35,8 +35,8 @@ const durationLabel = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${total
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Playlists", "item": "https://ubuhanga.dev/playlists" },
-        { "@type": "ListItem", "position": 2, "name": playlist.title, "item": `https://ubuhanga.dev/playlists/${playlist.slug}` },
+        { "@type": "ListItem", "position": 1, "name": "Playlists", "item": "https://ubuhanga.techinika.com/playlists" },
+        { "@type": "ListItem", "position": 2, "name": playlist.title, "item": `https://ubuhanga.techinika.com/playlists/${playlist.slug}` },
       ],
     })} />
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -44,7 +44,7 @@ const durationLabel = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${total
       "@type": "ItemList",
       "name": playlist.title,
       "description": playlist.description,
-      "url": `https://ubuhanga.dev/playlists/${playlist.slug}`,
+      "url": `https://ubuhanga.techinika.com/playlists/${playlist.slug}`,
       "itemListElement": playlistVideos.map((v, i) => ({
         "@type": "ListItem",
         "position": i + 1,
@@ -52,7 +52,7 @@ const durationLabel = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${total
           "@type": "VideoObject",
           "name": v.title,
           "description": v.description,
-          "url": `https://ubuhanga.dev/videos/${v.slug}`,
+          "url": `https://ubuhanga.techinika.com/videos/${v.slug}`,
         },
       })),
     })} />

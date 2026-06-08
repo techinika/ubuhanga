@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getAllVideos } from '../lib/firestore';
 
 export const GET: APIRoute = async () => {
-  const site = 'https://ubuhanga.dev';
+  const site = 'https://ubuhanga.techinika.com';
   const videos = await getAllVideos();
 
   const items = videos.map(

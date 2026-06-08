@@ -1,0 +1,105 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getDB } from "../../../lib/firestore";
+
+const db = getDB();
+const snap = await db.collection("categories").orderBy("name").get();
+const categories = snap.docs.map((d) => ({ id: d.id, name: d.data().name }));
+---
+
+<AdminLayout title="Categories — Admin — Ubuhanga" heading="Categories">
+  <div class="admin-bar">
+    <p class="admin-bar__title">All categories</p>
+    <button id="category-add-btn" class="admin-btn admin-btn--primary">+ Add category</button>
+  </div>
+
+  {categories.length === 0 ? (
+    <p class="admin-empty">No categories yet.</p>
+  ) : (
+    <div class="admin-category-list" id="categories-list">
+      {categories.map((c) => (
+        <div class="admin-category-item">
+          <span>{c.name}</span>
+          <button class="admin-btn-sm admin-btn-sm--danger" data-delete-category={c.id}>Delete</button>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  import { getFirebaseDB } from "../../../lib/firebase-client";
+  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { collection, addDoc, deleteDoc, doc } from "firebase/firestore";
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "/admin"; return; }
+    initPage();
+  });
+
+  function initPage() {
+    document.querySelectorAll("[data-delete-category]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-delete-category")!;
+        if (!confirm("Delete this category?")) return;
+        try {
+          await deleteDoc(doc(db, "categories", id));
+          btn.closest(".admin-category-item")?.remove();
+        } catch (e) {
+          console.error("Failed to delete:", e);
+          alert("Failed to delete.");
+        }
+      });
+    });
+  }
+
+  document.getElementById("category-add-btn")?.addEventListener("click", async () => {
+    const name = prompt("Category name:");
+    if (!name?.trim()) return;
+    try {
+      const ref = await addDoc(collection(db, "categories"), { name: name.trim() });
+      const list = document.getElementById("categories-list");
+      if (!list) { window.location.reload(); return; }
+      const item = document.createElement("div");
+      item.className = "admin-category-item";
+      item.innerHTML = `
+        <span>${name.trim()}</span>
+        <button class="admin-btn-sm admin-btn-sm--danger" data-delete-category="${ref.id}">Delete</button>
+      `;
+      item.querySelector("[data-delete-category]")?.addEventListener("click", async () => {
+        if (!confirm("Delete this category?")) return;
+        await deleteDoc(doc(db, "categories", ref.id));
+        item.remove();
+      });
+      list.appendChild(item);
+      const empty = list.closest(".admin-main")?.querySelector(".admin-empty") as HTMLElement | null;
+      if (empty) empty.hidden = true;
+    } catch (e) {
+      console.error("Failed to add category:", e);
+      alert("Failed to add.");
+    }
+  });
+</script>
+
+<style is:global>
+.admin-category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-category-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.88rem;
+  background: var(--color-surface-warm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+</style>

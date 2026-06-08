@@ -1,0 +1,73 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Add playlist — Admin — Ubuhanga" heading="Add playlist">
+  <form id="playlist-form" class="admin-form">
+    <label class="admin-field">
+      <span class="admin-field__label">Title</span>
+      <input class="admin-field__input" name="title" required />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Description</span>
+      <textarea class="admin-field__textarea" name="description" rows="3"></textarea>
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Thumbnail URL</span>
+      <input class="admin-field__input" name="thumbnail" />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Slug</span>
+      <input class="admin-field__input" name="slug" placeholder="Auto-generated from title if empty" />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Tags (comma-separated)</span>
+      <input class="admin-field__input" name="tags" placeholder="e.g. Docker, DevOps" />
+    </label>
+    <div class="admin-form__actions">
+      <button type="submit" class="admin-btn admin-btn--primary">Create</button>
+      <a href="/admin/playlists" class="admin-btn">Cancel</a>
+    </div>
+    <p class="admin-form__error" id="form-error" hidden></p>
+  </form>
+</AdminLayout>
+
+<script>
+  import { getFirebaseDB } from "../../../lib/firebase-client";
+  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { collection, addDoc } from "firebase/firestore";
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "/admin"; return; }
+  });
+
+  document.getElementById("playlist-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById("form-error")!;
+    errEl.hidden = true;
+    const fd = new FormData(e.target as HTMLFormElement);
+    const data: Record<string, unknown> = {};
+    fd.forEach((val, key) => { data[key] = val; });
+
+    if (data.tags) {
+      data.tags = (data.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean);
+    } else {
+      data.tags = [];
+    }
+    if (!data.slug) {
+      data.slug = (data.title as string).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    }
+
+    try {
+      await addDoc(collection(db, "playlists"), data);
+      window.location.href = "/admin/playlists";
+    } catch (err) {
+      errEl.textContent = err instanceof Error ? err.message : "Failed to save.";
+      errEl.hidden = false;
+    }
+  });
+</script>

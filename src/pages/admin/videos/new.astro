@@ -1,0 +1,118 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getCategories } from "../../../lib/firestore";
+import { getPlaylists } from "../../../lib/firestore";
+
+const categories = await getCategories();
+const playlists = await getPlaylists();
+---
+
+<AdminLayout title="Add video — Admin — Ubuhanga" heading="Add video">
+  <form id="video-form" class="admin-form">
+    <label class="admin-field">
+      <span class="admin-field__label">Title</span>
+      <input class="admin-field__input" name="title" required />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Description</span>
+      <textarea class="admin-field__textarea" name="description" rows="3"></textarea>
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">YouTube ID</span>
+      <input class="admin-field__input" name="youtubeId" required placeholder="e.g. fgTGADljAeg" />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Thumbnail URL</span>
+      <input class="admin-field__input" name="thumbnail" placeholder="Leave blank to auto-generate from YouTube ID" />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Duration</span>
+      <input class="admin-field__input" name="duration" required placeholder="e.g. 42:18" />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Category</span>
+      <select class="admin-field__select" name="category" required>
+        <option value="">— Select —</option>
+        {categories.filter(c => c !== "All").map(c => <option value={c}>{c}</option>)}
+      </select>
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Published at</span>
+      <input class="admin-field__input" name="publishedAt" type="date" required />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Slug</span>
+      <input class="admin-field__input" name="slug" placeholder="Auto-generated from title if empty" />
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Playlist</span>
+      <select class="admin-field__select" name="playlistId">
+        <option value="">— None —</option>
+        {playlists.map(p => <option value={p.id}>{p.title}</option>)}
+      </select>
+    </label>
+    <label class="admin-field">
+      <span class="admin-field__label">Tags (comma-separated)</span>
+      <input class="admin-field__input" name="tags" placeholder="e.g. React, Hooks, Frontend" />
+    </label>
+    <div class="admin-form__actions">
+      <button type="submit" class="admin-btn admin-btn--primary">Create</button>
+      <a href="/admin/videos" class="admin-btn">Cancel</a>
+    </div>
+    <p class="admin-form__error" id="form-error" hidden></p>
+  </form>
+</AdminLayout>
+
+<script>
+  import { getFirebaseDB } from "../../../lib/firebase-client";
+  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { collection, addDoc } from "firebase/firestore";
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "/admin"; return; }
+  });
+
+  document.getElementById("video-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById("form-error")!;
+    errEl.hidden = true;
+    const fd = new FormData(e.target as HTMLFormElement);
+    const data: Record<string, unknown> = {};
+    fd.forEach((val, key) => { data[key] = val; });
+
+    if (!data.youtubeId || !/^[a-zA-Z0-9_-]{11}$/.test(data.youtubeId as string)) {
+      errEl.textContent = "YouTube ID must be exactly 11 characters.";
+      errEl.hidden = false;
+      return;
+    }
+    if (!data.duration || !/^\d{1,2}:\d{2}$/.test(data.duration as string)) {
+      errEl.textContent = "Duration must be in MM:SS format (e.g. 42:18).";
+      errEl.hidden = false;
+      return;
+    }
+    if (!data.slug) {
+      data.slug = (data.title as string).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    }
+    if (!data.thumbnail) {
+      data.thumbnail = `https://img.youtube.com/vi/${data.youtubeId}/maxresdefault.jpg`;
+    }
+    if (data.tags) {
+      data.tags = (data.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean);
+    } else {
+      data.tags = [];
+    }
+    data.views = 0;
+
+    try {
+      await addDoc(collection(db, "videos"), data);
+      window.location.href = "/admin/videos";
+    } catch (err) {
+      errEl.textContent = err instanceof Error ? err.message : "Failed to save.";
+      errEl.hidden = false;
+    }
+  });
+</script>

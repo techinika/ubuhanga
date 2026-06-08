@@ -7,7 +7,7 @@ export default defineConfig({
   output: "server",
   adapter: vercel(),
 
-  site: "https://ubuhanga.dev",
+  site: "https://ubuhanga.techinika.com",
 
   integrations: [],
 

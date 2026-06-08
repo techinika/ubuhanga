@@ -1,0 +1,76 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getAllVideos } from "../../../lib/firestore";
+
+const videos = await getAllVideos();
+---
+
+<AdminLayout title="Videos — Admin — Ubuhanga" heading="Videos">
+  <div class="admin-bar">
+    <p class="admin-bar__title">All videos</p>
+    <a href="/admin/videos/new" class="admin-btn admin-btn--primary">+ Add video</a>
+  </div>
+
+  {videos.length === 0 ? (
+    <p class="admin-empty">No videos yet.</p>
+  ) : (
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Duration</th>
+            <th>Views</th>
+            <th class="admin-table__cell-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="videos-tbody">
+          {videos.map((v) => (
+            <tr>
+              <td class="admin-table__cell-title">{v.title}</td>
+              <td>{v.category}</td>
+              <td>{v.duration}</td>
+              <td>{v.views ?? 0}</td>
+              <td class="admin-table__cell-actions">
+                <a href={`/admin/videos/${v.id}`} class="admin-btn-sm">Edit</a>
+                <button class="admin-btn-sm admin-btn-sm--danger" data-delete-video={v.id}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  import { getFirebaseDB } from "../../../lib/firebase-client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { doc, deleteDoc } from "firebase/firestore";
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "/admin"; return; }
+    initPage();
+  });
+
+  function initPage() {
+    document.querySelectorAll("[data-delete-video]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-delete-video")!;
+        if (!confirm("Delete this video?")) return;
+        try {
+          await deleteDoc(doc(db, "videos", id));
+          btn.closest("tr")?.remove();
+        } catch (e) {
+          console.error("Failed to delete:", e);
+          alert("Failed to delete.");
+        }
+      });
+    });
+  }
+</script>
