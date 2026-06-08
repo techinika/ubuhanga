@@ -10,6 +10,7 @@ import NewsletterForm from "@/components/NewsletterForm.astro";
 import CategoryPill from "@/components/CategoryPill.astro";
 import EmptyState from "@/components/EmptyState.astro";
 import GoogleAd from "@/components/GoogleAd.astro";
+import { SITE_URL } from "@/lib/constants";
 
 import { getFeaturedVideos, getPlaylists, getCategories, getSiteStats } from "@/lib/firestore";
 
@@ -273,6 +274,33 @@ const stats = { totalVideos: rawStats.totalVideos, totalPlaylists: rawStats.tota
       <NewsletterForm />
     </div>
   </section>
+  <script is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Ubuhanga",
+      url: SITE_URL,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    })}
+  />
+
+  <script is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Ubuhanga — Free Kinyarwanda Tech Tutorials",
+      description: "Learn programming and tech skills in Kinyarwanda. Free tutorials covering React, Node.js, Python, DevOps, databases, and more.",
+    })}
+  />
 </BaseLayout>
 
 <script>

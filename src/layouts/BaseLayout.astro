@@ -56,6 +56,7 @@ const siteURL = SITE_URL;
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#b45309" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content={SITE_NAME} />
 
@@ -70,7 +71,7 @@ const siteURL = SITE_URL;
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={`${siteURL}${ogImage}`} />
+    <meta property="og:image" content={ogImage.startsWith("http") ? ogImage : `${siteURL}${ogImage}`} />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content="rw_RW" />
     {
@@ -86,13 +87,13 @@ const siteURL = SITE_URL;
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={`${siteURL}${ogImage}`} />
+    <meta name="twitter:image" content={ogImage.startsWith("http") ? ogImage : `${siteURL}${ogImage}`} />
     <meta name="twitter:site" content={SITE_TWITTER} />
     <meta name="twitter:creator" content={SITE_TWITTER} />
 
     <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
 
     <!-- RSS + Sitemap -->
     <link rel="alternate" type="application/rss+xml" title="Ubuhanga RSS Feed" href="/rss.xml" />
@@ -142,20 +143,23 @@ const siteURL = SITE_URL;
       })}
     />
 
-    <!-- Structured Data — Breadcrumbs -->
-    <script is:inline
-      type="application/ld+json"
-      set:html={JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        itemListElement: breadcrumbs.map((crumb, i) => ({
-          "@type": "ListItem",
-          position: i + 1,
-          name: crumb.name,
-          item: crumb.item,
-        })),
-      })}
-    />
+    {
+      breadcrumbs.length > 0 && (
+        <script is:inline
+          type="application/ld+json"
+          set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: breadcrumbs.map((crumb, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: crumb.name,
+              item: crumb.item,
+            })),
+          })}
+        />
+      )
+    }
 
     <!-- Fonts — self-hosted via @fontsource -->
   </head>
@@ -281,6 +285,25 @@ const siteURL = SITE_URL;
       </div>
     </header>
 
+    <!-- ── Breadcrumbs ──────────────────────────────────── -->
+    {
+      breadcrumbs.length > 0 && (
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <ol class="breadcrumbs__list">
+            {breadcrumbs.map((crumb, i) => (
+              <li class="breadcrumbs__item">
+                {i < breadcrumbs.length - 1 ? (
+                  <a href={crumb.item} class="breadcrumbs__link">{crumb.name}</a>
+                ) : (
+                  <span class="breadcrumbs__current" aria-current="page">{crumb.name}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+
     <!-- ── Main Content ──────────────────────────────────── -->
     <main id="main-content">
       <slot />
@@ -322,6 +345,7 @@ const siteURL = SITE_URL;
           <div class="site-footer__nav-col">
             <p class="site-footer__nav-title">More</p>
             <a href="/about" class="site-footer__nav-link">About</a>
+            <a href="/sitemap.xml" class="site-footer__nav-link">Sitemap</a>
             <a href="/admin" class="site-footer__nav-link">Admin</a>
             <a
               href="https://agaseke.me/techinika"
@@ -782,6 +806,50 @@ const siteURL = SITE_URL;
   }
 
   /* ─── Responsive nav ─────────────────────────────────── */
+  /* ─── Breadcrumbs ────────────────────────────────────── */
+  .breadcrumbs {
+    padding: 0.75rem 0;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    background: var(--color-surface-warm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .breadcrumbs__list {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .breadcrumbs__item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .breadcrumbs__item + .breadcrumbs__item::before {
+    content: "/";
+    opacity: 0.4;
+  }
+
+  .breadcrumbs__link {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .breadcrumbs__link:hover {
+    color: var(--color-text-primary);
+  }
+
+  .breadcrumbs__current {
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
   @media (max-width: 768px) {
     .site-nav__links {
       display: none;

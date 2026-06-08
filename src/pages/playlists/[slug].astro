@@ -124,6 +124,7 @@ const durationLabel = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${total
 
         <section class="playlist-videos">
           <div class="container">
+            <h2 class="playlist-videos__heading">Videos in this playlist</h2>
             {playlistVideos.length > 0 ? (
               <div class="playlist-videos__list" role="list">
                 {playlistVideos.map((video, idx) => (
@@ -299,6 +300,15 @@ const durationLabel = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${total
   /* ─── Video List ────────────────────────────────────── */
   .playlist-videos {
     padding: 2rem 0 5rem;
+  }
+
+  .playlist-videos__heading {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text-primary);
+    margin-bottom: 1.25rem;
   }
 
   .playlist-videos__list {
