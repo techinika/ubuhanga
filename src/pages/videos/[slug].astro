@@ -6,16 +6,26 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import VideoCard from "@/components/VideoCard.astro";
 import CommentSection from "@/components/CommentSection.astro";
 import GoogleAd from "@/components/GoogleAd.astro";
+import EmptyState from "@/components/EmptyState.astro";
 import { SITE_URL } from "@/lib/constants";
 import { getVideoBySlug, getPlaylistById, getFeaturedVideos } from "@/lib/firestore";
 
 const { slug } = Astro.params;
-const video = await getVideoBySlug(slug!);
-const playlist = video?.playlistId ? await getPlaylistById(video.playlistId) : null;
-
-const related = video
-  ? (await getFeaturedVideos(4, video.category)).filter((v) => v.slug !== video.slug).slice(0, 3)
-  : [];
+let video: import("@/lib/firestore").Video | null = null;
+let playlist: import("@/lib/firestore").Playlist | null = null;
+let related: import("@/lib/firestore").Video[] = [];
+try {
+  const result = await getVideoBySlug(slug!);
+  video = result;
+  playlist = result?.playlistId ? await getPlaylistById(result.playlistId) : null;
+  related = result
+    ? (await getFeaturedVideos(4, result.category)).filter((v) => v.slug !== result.slug).slice(0, 3)
+    : [];
+} catch {
+  video = null;
+  playlist = null;
+  related = [];
+}
 ---
 
 <BaseLayout
@@ -162,7 +172,7 @@ const related = video
 
             <aside class="video-page__sidebar" aria-label="Related videos">
               <GoogleAd slot="VIDEO_SIDEBAR" format="rectangle" className="ad-sidebar" />
-              {related.length > 0 && (
+              {related.length > 0 ? (
                 <div class="video-page__related">
                   <h2 class="video-page__related-title">More in {video.category}</h2>
                   <div class="video-page__related-grid">
@@ -171,6 +181,8 @@ const related = video
                     ))}
                   </div>
                 </div>
+              ) : (
+                <EmptyState title="No related videos" message="Check back later for more content." icon="folder" />
               )}
             </aside>
           </div>

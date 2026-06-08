@@ -131,12 +131,17 @@ const data = snap.data()!;
       return;
     }
 
+    const submitBtn = document.querySelector('#playlist-form button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Saving...";
     try {
       await updateDoc(doc(db, "playlists", playlistId), formData);
       window.location.href = "/admin/playlists";
     } catch (err) {
       errEl.textContent = err instanceof Error ? err.message : "Failed to save.";
       errEl.hidden = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Update";
     }
   });
 </script>

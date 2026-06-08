@@ -55,12 +55,14 @@ const categories = snap.docs.map((d) => ({ id: d.id, name: d.data().name }));
           btn.closest(".admin-category-item")?.querySelector("span")?.textContent?.trim() ||
           "this category";
         if (!confirm(`Delete category "${name}"?`)) return;
+        (btn as HTMLButtonElement).disabled = true;
         try {
           await deleteDoc(doc(db, "categories", id));
           btn.closest(".admin-category-item")?.remove();
         } catch (e) {
           console.error("Failed to delete:", e);
           alert("Failed to delete.");
+          (btn as HTMLButtonElement).disabled = false;
         }
       });
     });
@@ -80,6 +82,9 @@ const categories = snap.docs.map((d) => ({ id: d.id, name: d.data().name }));
         return;
       }
     }
+    const addBtn = document.getElementById("category-add-btn") as HTMLButtonElement;
+    addBtn.disabled = true;
+    addBtn.textContent = "Saving...";
     try {
       const ref = await addDoc(collection(db, "categories"), { name: name.trim() });
       const list = document.getElementById("categories-list");
@@ -100,17 +105,28 @@ const categories = snap.docs.map((d) => ({ id: d.id, name: d.data().name }));
       item.querySelector("[data-delete-category]")?.addEventListener("click", async () => {
         const name = item.querySelector("span")?.textContent?.trim() || "this category";
         if (!confirm(`Delete category "${name}"?`)) return;
-        await deleteDoc(doc(db, "categories", ref.id));
-        item.remove();
+        (delBtn as HTMLButtonElement).disabled = true;
+        try {
+          await deleteDoc(doc(db, "categories", ref.id));
+          item.remove();
+        } catch (e) {
+          console.error("Failed to delete:", e);
+          alert("Failed to delete.");
+          (delBtn as HTMLButtonElement).disabled = false;
+        }
       });
       list.appendChild(item);
       const empty = list
         .closest(".admin-main")
         ?.querySelector(".admin-empty") as HTMLElement | null;
       if (empty) empty.hidden = true;
+      addBtn.disabled = false;
+      addBtn.textContent = "+ Add category";
     } catch (e) {
       console.error("Failed to add category:", e);
       alert("Failed to add.");
+      addBtn.disabled = false;
+      addBtn.textContent = "+ Add category";
     }
   });
 </script>

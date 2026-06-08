@@ -79,6 +79,11 @@ const tabs = [
   async function updateComment(id: string, status: "approved" | "rejected") {
     const el = document.querySelector(`[data-comment-id="${id}"]`);
     if (!el) return;
+    const btn = el.querySelector(status === "approved" ? "[data-approve]" : "[data-reject]") as HTMLButtonElement | null;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+    }
     try {
       await updateDoc(doc(db, "comments", id), { status });
       el.querySelector(".admin-comment__status")!.textContent = status;
@@ -90,6 +95,10 @@ const tabs = [
     } catch (e) {
       console.error("Failed to update comment:", e);
       alert("Failed to update.");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = status === "approved" ? "Approve" : "Reject";
+      }
     }
   }
 

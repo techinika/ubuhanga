@@ -329,17 +329,38 @@ export async function writeAuditLog(entry: {
 
 // ─── Stats ───────────────────────────────────────────────
 
+function parseDurationToSeconds(duration: string): number {
+  const parts = duration.split(":");
+  if (parts.length === 3) {
+    return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+  }
+  if (parts.length === 2) {
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+  }
+  return 0;
+}
+
 export async function getSiteStats(): Promise<{
   totalVideos: number;
   totalPlaylists: number;
+  totalHours: number;
 }> {
   const db = getDB();
-  const [videos, playlists] = await Promise.all([
+  const [videos, playlists, durationDocs] = await Promise.all([
     db.collection(COLLECTIONS.VIDEOS).count().get(),
     db.collection(COLLECTIONS.PLAYLISTS).count().get(),
+    db.collection(COLLECTIONS.VIDEOS).select("duration").get(),
   ]);
+  let totalSeconds = 0;
+  for (const doc of durationDocs.docs) {
+    const d = doc.data().duration;
+    if (typeof d === "string") {
+      totalSeconds += parseDurationToSeconds(d);
+    }
+  }
   return {
     totalVideos: videos.data().count,
     totalPlaylists: playlists.data().count,
+    totalHours: Math.round(totalSeconds / 3600),
   };
 }

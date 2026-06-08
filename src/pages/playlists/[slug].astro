@@ -9,8 +9,8 @@ import { SITE_URL } from "@/lib/constants";
 import { getPlaylistBySlug, getVideosByPlaylist } from "@/lib/firestore";
 
 const { slug } = Astro.params;
-const playlist = await getPlaylistBySlug(slug!);
-const playlistVideos = playlist ? await getVideosByPlaylist(playlist.id) : [];
+const playlist = await getPlaylistBySlug(slug!).catch(() => null);
+const playlistVideos = playlist ? await getVideosByPlaylist(playlist.id).catch(() => [] as import("@/lib/firestore").Video[]) : [];
 
 let totalDuration = 0;
 for (const v of playlistVideos) {

@@ -158,12 +158,17 @@ const playlists = await getPlaylists();
       return;
     }
 
+    const submitBtn = document.querySelector('#video-form button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Saving...";
     try {
       await addDoc(collection(db, "videos"), data);
       window.location.href = "/admin/videos";
     } catch (err) {
       errEl.textContent = err instanceof Error ? err.message : "Failed to save.";
       errEl.hidden = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create";
     }
   });
 </script>
