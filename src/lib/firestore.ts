@@ -108,13 +108,15 @@ export async function getVideosByPlaylist(playlistId: string): Promise<Video[]> 
   const snap = await db
     .collection(COLLECTIONS.VIDEOS)
     .where("playlistId", "==", playlistId)
-    .orderBy("publishedAt", "asc")
     .get();
-  return snap.docs.map((doc) => ({
+  const videos = snap.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
     publishedAt: timestampToISO(doc.data().publishedAt),
   })) as Video[];
+  return videos.sort(
+    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
+  );
 }
 
 // ─── Playlists ────────────────────────────────────────────

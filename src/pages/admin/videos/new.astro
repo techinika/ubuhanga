@@ -72,6 +72,7 @@ const playlists = await getPlaylists();
 
 <script>
   import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
+  import { slugify, parseTags } from "@/lib/helpers";
   import { onAuthStateChanged } from "firebase/auth";
   import { collection, addDoc } from "firebase/firestore";
 
@@ -106,22 +107,12 @@ const playlists = await getPlaylists();
       return;
     }
     if (!data.slug) {
-      data.slug = (data.title as string)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+      data.slug = slugify(data.title as string);
     }
     if (!data.thumbnail) {
       data.thumbnail = `https://img.youtube.com/vi/${data.youtubeId}/maxresdefault.jpg`;
     }
-    if (data.tags) {
-      data.tags = (data.tags as string)
-        .split(",")
-        .map((t: string) => t.trim())
-        .filter(Boolean);
-    } else {
-      data.tags = [];
-    }
+    data.tags = data.tags ? parseTags(data.tags as string) : [];
     data.views = 0;
 
     try {

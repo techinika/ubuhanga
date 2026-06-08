@@ -12,7 +12,7 @@ import "@fontsource/lexend/500.css";
 import "@fontsource/lexend/600.css";
 import "@fontsource/lexend/700.css";
 import "@fontsource/lexend/800.css";
-import { SITE_NAME, SITE_URL } from "@/lib/constants";
+import { SITE_NAME, SITE_URL, SITE_TWITTER } from "@/lib/constants";
 
 interface Props {
   title: string;
@@ -87,7 +87,8 @@ const siteURL = SITE_URL;
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={`${siteURL}${ogImage}`} />
-    <meta name="twitter:site" content="@ubuhanga" />
+    <meta name="twitter:site" content={SITE_TWITTER} />
+    <meta name="twitter:creator" content={SITE_TWITTER} />
 
     <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -119,27 +120,7 @@ const siteURL = SITE_URL;
         name: siteName,
         url: siteURL,
         logo: `${siteURL}/favicon.svg`,
-        sameAs: ["https://youtube.com/@ubuhanga", "https://techinika.co.rw"],
-      })}
-    />
-
-    <!-- Structured Data — WebSite Sitelinks -->
-    <script is:inline
-      type="application/ld+json"
-      set:html={JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: siteName,
-        url: siteURL,
-        description: "A curated archive of programming and software development tutorials.",
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${siteURL}/search?q={search_term_string}`,
-          },
-          "query-input": "required name=search_term_string",
-        },
+        sameAs: ["https://youtube.com/@techinika", "https://techinika.co.rw"],
       })}
     />
 
@@ -149,27 +130,12 @@ const siteURL = SITE_URL;
       set:html={JSON.stringify({
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
-        itemListElement: breadcrumbs,
-      })}
-    />
-
-    <!-- Structured Data — WebSite Sitelinks -->
-    <script is:inline
-      type="application/ld+json"
-      set:html={JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: siteName,
-        url: siteURL,
-        description: "A curated archive of programming and software development tutorials.",
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${siteURL}/search?q={search_term_string}`,
-          },
-          "query-input": "required name=search_term_string",
-        },
+        itemListElement: breadcrumbs.map((crumb, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: crumb.name,
+          item: crumb.item,
+        })),
       })}
     />
 
@@ -241,7 +207,7 @@ const siteURL = SITE_URL;
             Support
           </a>
           <a
-            href="https://youtube.com/@ubuhanga"
+            href="https://youtube.com/@techinika"
             target="_blank"
             rel="noopener noreferrer"
             class="btn btn--primary site-nav__cta"
@@ -346,7 +312,7 @@ const siteURL = SITE_URL;
               class="site-footer__nav-link">Support ↗</a
             >
             <a
-              href="https://youtube.com/@ubuhanga"
+              href="https://youtube.com/@techinika"
               target="_blank"
               rel="noopener"
               class="site-footer__nav-link">YouTube ↗</a

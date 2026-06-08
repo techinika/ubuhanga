@@ -15,7 +15,6 @@ const tag = href ? "a" : "button";
       href={href}
       class={`category-pill ${active ? "category-pill--active" : ""}`}
       aria-current={active ? "true" : undefined}
-      role="listitem"
     >
       {label}
     </a>
@@ -23,7 +22,6 @@ const tag = href ? "a" : "button";
     <button
       class={`category-pill ${active ? "category-pill--active" : ""}`}
       aria-pressed={active}
-      role="listitem"
       data-category={label}
     >
       {label}

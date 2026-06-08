@@ -78,10 +78,14 @@ const categories = snap.docs.map((d) => ({ id: d.id, name: d.data().name }));
       }
       const item = document.createElement("div");
       item.className = "admin-category-item";
-      item.innerHTML = `
-        <span>${name.trim()}</span>
-        <button class="admin-btn-sm admin-btn-sm--danger" data-delete-category="${ref.id}">Delete</button>
-      `;
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = name.trim();
+      const delBtn = document.createElement("button");
+      delBtn.className = "admin-btn-sm admin-btn-sm--danger";
+      delBtn.setAttribute("data-delete-category", ref.id);
+      delBtn.textContent = "Delete";
+      item.appendChild(nameSpan);
+      item.appendChild(delBtn);
       item.querySelector("[data-delete-category]")?.addEventListener("click", async () => {
         const name = item.querySelector("span")?.textContent?.trim() || "this category";
         if (!confirm(`Delete category "${name}"?`)) return;

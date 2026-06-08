@@ -48,12 +48,18 @@ const searchQuery = Astro.url.searchParams.get("q") || "";
         </div>
       </div>
 
-      <div id="search-results" class="search-page__results">
+      <div id="search-results" class="search-page__results" aria-live="polite" aria-atomic="true">
         <div class="search-page__count" id="result-count">{allVideos.length} videos</div>
         <div class="video-grid" id="video-grid" role="list">
           {
             allVideos.map((video) => (
-              <div class="search-result-item" data-search={JSON.stringify(video).toLowerCase()}>
+              <div
+                class="search-result-item"
+                data-search-title={(video.title || "").toLowerCase()}
+                data-search-desc={(video.description || "").toLowerCase()}
+                data-search-tags={((video.tags || []) as string[]).join(" ").toLowerCase()}
+                data-search-cat={(video.category || "").toLowerCase()}
+              >
                 <VideoCard video={video} />
               </div>
             ))
@@ -77,7 +83,10 @@ const searchQuery = Astro.url.searchParams.get("q") || "";
 
   const rawData = items.map((el) => ({
     el,
-    data: (el.getAttribute("data-search") || "").toLowerCase(),
+    title: el.getAttribute("data-search-title") || "",
+    desc: el.getAttribute("data-search-desc") || "",
+    tags: el.getAttribute("data-search-tags") || "",
+    cat: el.getAttribute("data-search-cat") || "",
   }));
 
   function getURLQuery(): string {
@@ -98,13 +107,15 @@ const searchQuery = Astro.url.searchParams.get("q") || "";
     const trimmed = query.trim().toLowerCase();
     let visible = 0;
 
-    for (const { el, data } of rawData) {
-      if (!trimmed || data.includes(trimmed)) {
-        el.hidden = false;
-        visible++;
-      } else {
-        el.hidden = true;
-      }
+    for (const item of rawData) {
+      const match =
+        !trimmed ||
+        item.title.includes(trimmed) ||
+        item.desc.includes(trimmed) ||
+        item.tags.includes(trimmed) ||
+        item.cat.includes(trimmed);
+      item.el.hidden = !match;
+      if (match) visible++;
     }
 
     count.textContent = `${visible} video${visible !== 1 ? "s" : ""}`;
