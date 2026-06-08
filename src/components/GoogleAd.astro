@@ -6,29 +6,29 @@
 
 interface Props {
   slot: string;
-  format?: 'auto' | 'rectangle' | 'horizontal' | 'vertical';
+  format?: "auto" | "rectangle" | "horizontal" | "vertical";
   className?: string;
 }
 
-const { slot, format = 'auto', className = '' } = Astro.props;
+const { slot, format = "auto", className = "" } = Astro.props;
 const adClient = import.meta.env.PUBLIC_ADSENSE_ID;
 ---
 
-{adClient && (
-  <div class={`ad-container ${className}`}>
-    <ins
-      class="adsbygoogle"
-      style="display:block"
-      data-ad-client={adClient}
-      data-ad-slot={slot}
-      data-ad-format={format}
-      data-full-width-responsive="true"
-    />
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
-)}
+{
+  adClient && (
+    <div class={`ad-container ${className}`}>
+      <ins
+        class="adsbygoogle"
+        style="display:block"
+        data-ad-client={adClient}
+        data-ad-slot={slot}
+        data-ad-format={format}
+        data-full-width-responsive="true"
+      />
+      <script is:inline>(window.adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+  )
+}
 
 <style>
   .ad-container {

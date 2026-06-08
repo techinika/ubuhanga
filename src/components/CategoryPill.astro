@@ -6,66 +6,70 @@ interface Props {
   href?: string;
 }
 const { label, active = false, href } = Astro.props;
-const tag = href ? 'a' : 'button';
+const tag = href ? "a" : "button";
 ---
 
-{tag === 'a' ? (
-  <a
-    href={href}
-    class={`category-pill ${active ? 'category-pill--active' : ''}`}
-    aria-current={active ? 'true' : undefined}
-    role="listitem"
-  >
-    {label}
-  </a>
-) : (
-  <button
-    class={`category-pill ${active ? 'category-pill--active' : ''}`}
-    aria-pressed={active}
-    role="listitem"
-    data-category={label}
-  >
-    {label}
-  </button>
-)}
+{
+  tag === "a" ? (
+    <a
+      href={href}
+      class={`category-pill ${active ? "category-pill--active" : ""}`}
+      aria-current={active ? "true" : undefined}
+      role="listitem"
+    >
+      {label}
+    </a>
+  ) : (
+    <button
+      class={`category-pill ${active ? "category-pill--active" : ""}`}
+      aria-pressed={active}
+      role="listitem"
+      data-category={label}
+    >
+      {label}
+    </button>
+  )
+}
 
 <style>
-.category-pill {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: 1px solid var(--color-border);
-  padding: 0.35rem 0.9rem;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  text-decoration: none;
-  transition: background var(--transition-fast), color var(--transition-fast),
-              border-color var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.category-pill:hover {
-  background: var(--color-surface-warm);
-  color: var(--color-text-primary);
-  border-color: var(--color-border-strong);
-}
-
-.category-pill--active {
-  background: var(--color-amber-100);
-  color: var(--color-amber-800);
-  border-color: var(--color-amber-200);
-  font-weight: 600;
-}
-
-@media (prefers-color-scheme: dark) {
-  .category-pill--active {
-    background: rgba(180, 83, 9, 0.25);
-    color: var(--color-amber-300);
-    border-color: rgba(180, 83, 9, 0.4);
+  .category-pill {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+      background var(--transition-fast),
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+    flex-shrink: 0;
   }
-}
+
+  .category-pill:hover {
+    background: var(--color-surface-warm);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-strong);
+  }
+
+  .category-pill--active {
+    background: var(--color-amber-100);
+    color: var(--color-amber-800);
+    border-color: var(--color-amber-200);
+    font-weight: 600;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .category-pill--active {
+      background: rgba(180, 83, 9, 0.25);
+      color: var(--color-amber-300);
+      border-color: rgba(180, 83, 9, 0.4);
+    }
+  }
 </style>

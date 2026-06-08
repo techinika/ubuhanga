@@ -12,10 +12,15 @@ export default defineConfig({
   integrations: [],
 
   vite: {
+    resolve: {
+      alias: {
+        "@": new URL("./src", import.meta.url).pathname,
+      },
+    },
     define: {},
     ssr: {
       external: ["firebase-admin"],
-      noExternal: ["firebase"],
+      noExternal: ["firebase", "@fontsource/inter", "@fontsource/lexend"],
     },
     optimizeDeps: {
       exclude: ["firebase-admin"],

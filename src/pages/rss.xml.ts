@@ -1,8 +1,9 @@
-import type { APIRoute } from 'astro';
-import { getAllVideos } from '../lib/firestore';
+import type { APIRoute } from "astro";
+import { SITE_URL } from "@/lib/constants";
+import { getAllVideos } from "@/lib/firestore";
 
 export const GET: APIRoute = async () => {
-  const site = 'https://ubuhanga.techinika.com';
+  const site = SITE_URL;
   const videos = await getAllVideos();
 
   const items = videos.map(
@@ -26,11 +27,11 @@ export const GET: APIRoute = async () => {
     <atom:link href="${site}/rss.xml" rel="self" type="application/rss+xml" />
     <language>rw</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-${items.join('\n')}
+${items.join("\n")}
   </channel>
 </rss>`;
 
   return new Response(xml, {
-    headers: { 'Content-Type': 'application/xml' },
+    headers: { "Content-Type": "application/xml" },
   });
 };

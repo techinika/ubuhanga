@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run lint
+      - run: npm run build
+        env:
+          PUBLIC_FIREBASE_API_KEY: placeholder
+          PUBLIC_FIREBASE_AUTH_DOMAIN: placeholder
+          PUBLIC_FIREBASE_PROJECT_ID: placeholder
+          PUBLIC_FIREBASE_STORAGE_BUCKET: placeholder
+          PUBLIC_FIREBASE_MESSAGING_SENDER_ID: placeholder
+          PUBLIC_FIREBASE_APP_ID: placeholder
+          PUBLIC_ADSENSE_ID: placeholder
+          FIREBASE_ADMIN_PROJECT_ID: placeholder
+          FIREBASE_ADMIN_CLIENT_EMAIL: placeholder
+          FIREBASE_ADMIN_PRIVATE_KEY: placeholder

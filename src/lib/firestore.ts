@@ -2,30 +2,9 @@
 // Server-side Firestore helpers for Astro SSR/SSG data fetching
 // Used in page frontmatter (not in the browser)
 
-import {
-  initializeApp,
-  getApps,
-  cert,
-  type ServiceAccount,
-} from "firebase-admin/app";
+import { getAdminApp } from "./firebase-admin";
 import { getFirestore, type Timestamp } from "firebase-admin/firestore";
-
-// ─── Initialize Firebase Admin (once) ────────────────────
-function getAdminApp() {
-  if (getApps().length > 0) return getApps()[0];
-
-  return initializeApp({
-    credential: cert({
-      projectId: import.meta.env.FIREBASE_ADMIN_PROJECT_ID,
-      clientEmail: import.meta.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-      // Replace escaped newlines in env var
-      privateKey: import.meta.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(
-        /\\n/g,
-        "\n",
-      ),
-    } as ServiceAccount),
-  });
-}
+import { COLLECTIONS } from "./constants";
 
 export function getDB() {
   getAdminApp();
@@ -76,22 +55,26 @@ function timestampToISO(value: Timestamp | string | undefined): string {
 // ─── Videos ───────────────────────────────────────────────
 
 /** Fetch latest N videos, optionally filtered by category */
-export async function getFeaturedVideos(
-  limit = 6,
-  category?: string,
-): Promise<Video[]> {
+export async function getFeaturedVideos(limit = 6, category?: string): Promise<Video[]> {
   const db = getDB();
-  const q = db.collection("videos").orderBy("publishedAt", "desc").limit(limit);
   if (category && category !== "All") {
-    const filtered = q.where("category", "==", category);
-    const snap = await filtered.get();
+    const snap = await db
+      .collection(COLLECTIONS.VIDEOS)
+      .where("category", "==", category)
+      .orderBy("publishedAt", "desc")
+      .limit(limit)
+      .get();
     return snap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
       publishedAt: timestampToISO(doc.data().publishedAt),
     })) as Video[];
   }
-  const snap = await q.get();
+  const snap = await db
+    .collection(COLLECTIONS.VIDEOS)
+    .orderBy("publishedAt", "desc")
+    .limit(limit)
+    .get();
   return snap.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -102,11 +85,7 @@ export async function getFeaturedVideos(
 /** Fetch a single video by slug */
 export async function getVideoBySlug(slug: string): Promise<Video | null> {
   const db = getDB();
-  const snap = await db
-    .collection("videos")
-    .where("slug", "==", slug)
-    .limit(1)
-    .get();
+  const snap = await db.collection(COLLECTIONS.VIDEOS).where("slug", "==", slug).limit(1).get();
   if (snap.empty) return null;
   const doc = snap.docs[0];
   return {
@@ -119,17 +98,15 @@ export async function getVideoBySlug(slug: string): Promise<Video | null> {
 /** Fetch all video slugs (for static path generation) */
 export async function getAllVideoSlugs(): Promise<string[]> {
   const db = getDB();
-  const snap = await db.collection("videos").select("slug").get();
+  const snap = await db.collection(COLLECTIONS.VIDEOS).select("slug").get();
   return snap.docs.map((d) => d.data().slug as string);
 }
 
 /** Fetch videos belonging to a playlist */
-export async function getVideosByPlaylist(
-  playlistId: string,
-): Promise<Video[]> {
+export async function getVideosByPlaylist(playlistId: string): Promise<Video[]> {
   const db = getDB();
   const snap = await db
-    .collection("videos")
+    .collection(COLLECTIONS.VIDEOS)
     .where("playlistId", "==", playlistId)
     .orderBy("publishedAt", "asc")
     .get();
@@ -145,24 +122,14 @@ export async function getVideosByPlaylist(
 /** Fetch all playlists */
 export async function getPlaylists(limit = 20): Promise<Playlist[]> {
   const db = getDB();
-  const snap = await db
-    .collection("playlists")
-    .orderBy("title")
-    .limit(limit)
-    .get();
+  const snap = await db.collection(COLLECTIONS.PLAYLISTS).orderBy("title").limit(limit).get();
   return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Playlist[];
 }
 
 /** Fetch a single playlist by slug */
-export async function getPlaylistBySlug(
-  slug: string,
-): Promise<Playlist | null> {
+export async function getPlaylistBySlug(slug: string): Promise<Playlist | null> {
   const db = getDB();
-  const snap = await db
-    .collection("playlists")
-    .where("slug", "==", slug)
-    .limit(1)
-    .get();
+  const snap = await db.collection(COLLECTIONS.PLAYLISTS).where("slug", "==", slug).limit(1).get();
   if (snap.empty) return null;
   const doc = snap.docs[0];
   return { id: doc.id, ...doc.data() } as Playlist;
@@ -171,7 +138,7 @@ export async function getPlaylistBySlug(
 /** Fetch all playlist slugs */
 export async function getAllPlaylistSlugs(): Promise<string[]> {
   const db = getDB();
-  const snap = await db.collection("playlists").select("slug").get();
+  const snap = await db.collection(COLLECTIONS.PLAYLISTS).select("slug").get();
   return snap.docs.map((d) => d.data().slug as string);
 }
 
@@ -180,12 +147,12 @@ export async function getAllPlaylistSlugs(): Promise<string[]> {
 /** Get distinct category values from videos */
 export async function getCategories(): Promise<string[]> {
   const db = getDB();
-  const snap = await db.collection("categories").orderBy("name").get();
+  const snap = await db.collection(COLLECTIONS.CATEGORIES).orderBy("name").get();
   if (!snap.empty) {
     const cats = snap.docs.map((d) => d.data().name as string);
     return ["All", ...cats];
   }
-  const vSnap = await db.collection("videos").select("category").get();
+  const vSnap = await db.collection(COLLECTIONS.VIDEOS).select("category").limit(500).get();
   const cats = [...new Set(vSnap.docs.map((d) => d.data().category as string))].sort();
   return ["All", ...cats];
 }
@@ -193,10 +160,7 @@ export async function getCategories(): Promise<string[]> {
 /** Fetch all videos (for search & browse pages) */
 export async function getAllVideos(): Promise<Video[]> {
   const db = getDB();
-  const snap = await db
-    .collection("videos")
-    .orderBy("publishedAt", "desc")
-    .get();
+  const snap = await db.collection(COLLECTIONS.VIDEOS).orderBy("publishedAt", "desc").get();
   return snap.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -205,13 +169,160 @@ export async function getAllVideos(): Promise<Video[]> {
 }
 
 /** Fetch a playlist by its document ID */
-export async function getPlaylistById(
-  playlistId: string,
-): Promise<Playlist | null> {
+export async function getPlaylistById(playlistId: string): Promise<Playlist | null> {
   const db = getDB();
-  const snap = await db.collection("playlists").doc(playlistId).get();
+  const snap = await db.collection(COLLECTIONS.PLAYLISTS).doc(playlistId).get();
   if (!snap.exists) return null;
   return { id: snap.id, ...snap.data() } as Playlist;
+}
+
+// ─── Pagination ─────────────────────────────────────────
+
+interface PageInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+}
+
+interface PaginatedResult<T> {
+  items: T[];
+  pageInfo: PageInfo;
+}
+
+const PAGE_SIZE = 25;
+
+export async function getPaginatedVideos(
+  page = 1,
+  pageSize = PAGE_SIZE,
+): Promise<PaginatedResult<Video>> {
+  const db = getDB();
+  const offset = (page - 1) * pageSize;
+  const [totalSnap, snap] = await Promise.all([
+    db.collection(COLLECTIONS.VIDEOS).count().get(),
+    db
+      .collection(COLLECTIONS.VIDEOS)
+      .orderBy("publishedAt", "desc")
+      .offset(offset)
+      .limit(pageSize)
+      .get(),
+  ]);
+  const total = totalSnap.data().count;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  return {
+    items: snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      publishedAt: timestampToISO(doc.data().publishedAt),
+    })) as Video[],
+    pageInfo: {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      hasPrev: page > 1,
+      hasNext: page < totalPages,
+    },
+  };
+}
+
+export async function getPaginatedPlaylists(
+  page = 1,
+  pageSize = PAGE_SIZE,
+): Promise<PaginatedResult<Playlist>> {
+  const db = getDB();
+  const offset = (page - 1) * pageSize;
+  const [totalSnap, snap] = await Promise.all([
+    db.collection(COLLECTIONS.PLAYLISTS).count().get(),
+    db
+      .collection(COLLECTIONS.PLAYLISTS)
+      .orderBy("title")
+      .offset(offset)
+      .limit(pageSize)
+      .get(),
+  ]);
+  const total = totalSnap.data().count;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  return {
+    items: snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Playlist[],
+    pageInfo: {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      hasPrev: page > 1,
+      hasNext: page < totalPages,
+    },
+  };
+}
+
+// ─── Comments ────────────────────────────────────────────
+
+export interface Comment {
+  id: string;
+  videoId: string;
+  videoTitle?: string;
+  authorName: string;
+  authorPhoto?: string;
+  text: string;
+  createdAt: string;
+  status: "pending" | "approved" | "rejected";
+}
+
+export async function getCommentsForModeration(
+  status?: "pending" | "approved" | "rejected",
+): Promise<Comment[]> {
+  const db = getDB();
+  let q: FirebaseFirestore.Query = db.collection(COLLECTIONS.COMMENTS);
+  if (status) {
+    q = q.where("status", "==", status);
+  }
+  q = q.orderBy("createdAt", "desc").limit(100);
+  const snap = await q.get();
+  return snap.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      ...d,
+      createdAt: timestampToISO(d.createdAt),
+    } as Comment;
+  });
+}
+
+export async function getCommentStatusCounts(): Promise<{
+  pending: number;
+  approved: number;
+  rejected: number;
+}> {
+  const db = getDB();
+  const [pending, approved, rejected] = await Promise.all([
+    db.collection(COLLECTIONS.COMMENTS).where("status", "==", "pending").count().get(),
+    db.collection(COLLECTIONS.COMMENTS).where("status", "==", "approved").count().get(),
+    db.collection(COLLECTIONS.COMMENTS).where("status", "==", "rejected").count().get(),
+  ]);
+  return {
+    pending: pending.data().count,
+    approved: approved.data().count,
+    rejected: rejected.data().count,
+  };
+}
+
+// ─── Audit Log ──────────────────────────────────────────
+
+export async function writeAuditLog(entry: {
+  action: string;
+  adminEmail: string;
+  targetId?: string;
+  targetType?: string;
+  details?: string;
+}): Promise<void> {
+  const db = getDB();
+  await db.collection(COLLECTIONS.AUDIT_LOG).add({
+    ...entry,
+    createdAt: new Date(),
+  });
 }
 
 // ─── Stats ───────────────────────────────────────────────
@@ -222,8 +333,8 @@ export async function getSiteStats(): Promise<{
 }> {
   const db = getDB();
   const [videos, playlists] = await Promise.all([
-    db.collection("videos").count().get(),
-    db.collection("playlists").count().get(),
+    db.collection(COLLECTIONS.VIDEOS).count().get(),
+    db.collection(COLLECTIONS.PLAYLISTS).count().get(),
   ]);
   return {
     totalVideos: videos.data().count,

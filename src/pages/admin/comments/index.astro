@@ -1,0 +1,203 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { getCommentsForModeration, getCommentStatusCounts } from "@/lib/firestore";
+
+const statusFilter = (["pending", "approved", "rejected"] as const).find(
+  (s) => s === Astro.url.searchParams.get("status"),
+);
+
+const [comments, counts] = await Promise.all([
+  getCommentsForModeration(statusFilter),
+  getCommentStatusCounts(),
+]);
+
+const tabs = [
+  { label: "Pending", value: undefined, count: counts.pending },
+  { label: "Approved", value: "approved" as const, count: counts.approved },
+  { label: "Rejected", value: "rejected" as const, count: counts.rejected },
+] as const;
+---
+
+<AdminLayout title="Comments — Admin — Ubuhanga" heading="Comments">
+  <div class="admin-bar">
+    <p class="admin-bar__title">
+      {statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} comments` : "All comments"}
+    </p>
+  </div>
+
+  <div class="admin-tabs">
+    {tabs.map((tab) => (
+      <a
+        href={tab.value ? `/admin/comments?status=${tab.value}` : "/admin/comments"}
+        class:list={{ "admin-tab": true, "admin-tab--active": statusFilter === tab.value }}
+      >
+        {tab.label}
+        <span class="admin-tab__count">{tab.count}</span>
+      </a>
+    ))}
+  </div>
+
+  {comments.length === 0 ? (
+    <p class="admin-empty">No {statusFilter || ""} comments.</p>
+  ) : (
+    <div class="admin-comments">
+      {comments.map((c) => (
+        <div class="admin-comment" data-comment-id={c.id}>
+          <div class="admin-comment__header">
+            <strong>{c.authorName}</strong>
+            <span class="admin-comment__date">{new Date(c.createdAt).toLocaleDateString()}</span>
+            <span class:list={["admin-comment__status", `admin-comment__status--${c.status}`]}>{c.status}</span>
+          </div>
+          <p class="admin-comment__text">{c.text}</p>
+          <div class="admin-comment__actions">
+            {c.status !== "approved" && (
+              <button class="admin-btn-sm admin-comment__approve" data-approve={c.id}>Approve</button>
+            )}
+            {c.status !== "rejected" && (
+              <button class="admin-btn-sm admin-btn-sm--danger" data-reject={c.id}>Reject</button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { doc, updateDoc } from "firebase/firestore";
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "/admin"; return; }
+    initPage();
+  });
+
+  async function updateComment(id: string, status: "approved" | "rejected") {
+    const el = document.querySelector(`[data-comment-id="${id}"]`);
+    if (!el) return;
+    try {
+      await updateDoc(doc(db, "comments", id), { status });
+      el.querySelector(".admin-comment__status")!.textContent = status;
+      el.querySelector(".admin-comment__status")!.className = `admin-comment__status admin-comment__status--${status}`;
+      const approveBtn = el.querySelector("[data-approve]");
+      const rejectBtn = el.querySelector("[data-reject]");
+      if (approveBtn) approveBtn.remove();
+      if (rejectBtn) rejectBtn.remove();
+    } catch (e) {
+      console.error("Failed to update comment:", e);
+      alert("Failed to update.");
+    }
+  }
+
+  function initPage() {
+    document.querySelectorAll("[data-approve]").forEach((btn) => {
+      btn.addEventListener("click", () => updateComment(btn.getAttribute("data-approve")!, "approved"));
+    });
+    document.querySelectorAll("[data-reject]").forEach((btn) => {
+      btn.addEventListener("click", () => updateComment(btn.getAttribute("data-reject")!, "rejected"));
+    });
+  }
+</script>
+
+<style is:global>
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 0;
+}
+
+.admin-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-tab:hover { color: var(--color-text-primary); }
+.admin-tab--active {
+  color: var(--color-amber-600);
+  border-bottom-color: var(--color-amber-600);
+}
+
+.admin-tab__count {
+  font-size: 0.72rem;
+  background: var(--color-surface-warm);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
+.admin-tab--active .admin-tab__count {
+  background: var(--color-amber-100);
+  color: var(--color-amber-800);
+}
+
+.admin-comments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-comment {
+  padding: 1rem;
+  background: var(--color-surface-warm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.admin-comment__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.admin-comment__date {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.admin-comment__status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.admin-comment__status--pending { background: #fef9c3; color: #854d0e; }
+.admin-comment__status--approved { background: #dcfce7; color: #166534; }
+.admin-comment__status--rejected { background: #fee2e2; color: #991b1b; }
+
+.admin-comment__text {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.admin-comment__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .admin-comment__status--pending { background: rgba(254,249,195,0.15); color: #fde047; }
+  .admin-comment__status--approved { background: rgba(220,252,231,0.15); color: #86efac; }
+  .admin-comment__status--rejected { background: rgba(254,226,226,0.15); color: #fca5a5; }
+}
+</style>

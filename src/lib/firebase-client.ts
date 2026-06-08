@@ -1,8 +1,8 @@
 // src/lib/firebase-client.ts
 // Browser-only Firebase client (Auth + Firestore)
 
-import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -18,7 +18,7 @@ import {
   serverTimestamp,
   increment,
   type Firestore,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,

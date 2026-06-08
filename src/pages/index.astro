@@ -3,19 +3,14 @@
 // Ubuhanga — Tech Tutorial Archive Homepage
 // Framework: Astro | Styling: CSS custom properties | Data: Firebase Firestore
 
-import BaseLayout from '../layouts/BaseLayout.astro';
-import VideoCard from '../components/VideoCard.astro';
-import PlaylistCard from '../components/PlaylistCard.astro';
-import NewsletterForm from '../components/NewsletterForm.astro';
-import CategoryPill from '../components/CategoryPill.astro';
-import GoogleAd from '../components/GoogleAd.astro';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import VideoCard from "@/components/VideoCard.astro";
+import PlaylistCard from "@/components/PlaylistCard.astro";
+import NewsletterForm from "@/components/NewsletterForm.astro";
+import CategoryPill from "@/components/CategoryPill.astro";
+import GoogleAd from "@/components/GoogleAd.astro";
 
-import {
-  getFeaturedVideos,
-  getPlaylists,
-  getCategories,
-  getSiteStats,
-} from '../lib/firestore';
+import { getFeaturedVideos, getPlaylists, getCategories, getSiteStats } from "@/lib/firestore";
 
 const featuredVideos = await getFeaturedVideos(6);
 const playlists = await getPlaylists(4);
@@ -29,23 +24,22 @@ const stats = {
 ---
 
 <BaseLayout
-  title="Ubuhanga — Tech Tutorial Archive"
-  description="A curated archive of programming and software development tutorials. Learn React, Node.js, Python, DevOps, databases, and more through free video content."
+  title="Ubuhanga — Free Kinyarwanda Tech Tutorials"
+  description="Learn programming and tech skills in Kinyarwanda. Free tutorials covering React, Node.js, Python, DevOps, databases, and more — no sign-ups needed."
 >
-
   <!-- ═══════════════════════════════════════
        HERO
   ════════════════════════════════════════ -->
   <section class="hero" aria-labelledby="hero-heading">
     <div class="hero__inner container">
-      <div class="hero__badge">Free · Open · Always Available</div>
+      <div class="hero__badge">Free · Open · <strong>Mu Kinyarwanda</strong></div>
       <h1 class="hero__heading" id="hero-heading">
-        Learn by watching.<br/>
-        <em>Build by doing.</em>
+        Iga ikoranabuhanga<br />
+        <em>mu rurimi rwawe</em>
       </h1>
       <p class="hero__subheading">
-        A curated archive of programming tutorials — from beginner fundamentals
-        to real-world projects. No paywalls, no sign-ups. Just watch and build.
+        Learn programming and tech skills in <strong>Kinyarwanda</strong> — from beginner fundamentals
+        to real-world projects. No paywalls, no sign-ups. Just watch and build in your language.
       </p>
 
       <div class="hero__actions">
@@ -84,9 +78,7 @@ const stats = {
   <section class="categories-bar" aria-label="Filter by category">
     <div class="container">
       <div class="categories-bar__scroll" role="list" id="home-categories">
-        {categories.map((cat) => (
-          <CategoryPill label={cat} active={cat === 'All'} />
-        ))}
+        {categories.map((cat) => <CategoryPill label={cat} active={cat === "All"} />)}
       </div>
     </div>
   </section>
@@ -104,17 +96,24 @@ const stats = {
         <a href="/videos" class="section__link" aria-label="View all videos">
           View all
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M3 8h10M9 4l4 4-4 4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
           </svg>
         </a>
       </div>
 
       <div class="video-grid" role="list" id="featured-grid">
-        {featuredVideos.map((video) => (
-          <div data-categories={video.category}>
-            <VideoCard video={video} />
-          </div>
-        ))}
+        {
+          featuredVideos.map((video) => (
+            <div data-categories={video.category}>
+              <VideoCard video={video} />
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -132,15 +131,18 @@ const stats = {
         <a href="/playlists" class="section__link" aria-label="View all playlists">
           View all
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M3 8h10M9 4l4 4-4 4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
           </svg>
         </a>
       </div>
 
       <div class="playlist-grid" role="list">
-        {playlists.map((playlist) => (
-          <PlaylistCard playlist={playlist} />
-        ))}
+        {playlists.map((playlist) => <PlaylistCard playlist={playlist} />)}
       </div>
     </div>
   </section>
@@ -158,9 +160,10 @@ const stats = {
       <div class="about-strip__text">
         <h2 class="about-strip__title" id="about-heading">Built for learners, by practitioners</h2>
         <p class="about-strip__body">
-          Ubuhanga is a living archive of real-world programming tutorials. No fluff,
-          no filler — just hands-on content covering the tools and workflows developers
-          actually use. All content is free and always will be.
+          Ubuhanga is a living archive of real-world programming tutorials in <strong
+            >Kinyarwanda</strong
+          >. No fluff, no filler — just hands-on content teaching the tools and workflows developers
+          actually use, in the language you understand best. All content is free and always will be.
         </p>
         <a href="/about" class="btn btn--outline">Our story</a>
       </div>
@@ -168,18 +171,26 @@ const stats = {
         <div class="feature-item">
           <div class="feature-item__icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14.5A6.5 6.5 0 1110 3.5a6.5 6.5 0 010 13zM8.5 7l4 3-4 3V7z" fill="currentColor"/>
+              <path
+                d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14.5A6.5 6.5 0 1110 3.5a6.5 6.5 0 010 13zM8.5 7l4 3-4 3V7z"
+                fill="currentColor"></path>
             </svg>
           </div>
           <div>
             <p class="feature-item__title">Embedded YouTube player</p>
-            <p class="feature-item__desc">Watch without leaving the page, with full player controls.</p>
+            <p class="feature-item__desc">
+              Watch without leaving the page, with full player controls.
+            </p>
           </div>
         </div>
         <div class="feature-item">
           <div class="feature-item__icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 5h12M4 10h8M4 15h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path
+                d="M4 5h12M4 10h8M4 15h10"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"></path>
             </svg>
           </div>
           <div>
@@ -190,8 +201,12 @@ const stats = {
         <div class="feature-item">
           <div class="feature-item__icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M13.5 13.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.5"></circle>
+              <path
+                d="M13.5 13.5l3 3"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"></path>
             </svg>
           </div>
           <div>
@@ -202,8 +217,20 @@ const stats = {
         <div class="feature-item">
           <div class="feature-item__icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect
+                x="3"
+                y="3"
+                width="14"
+                height="14"
+                rx="2"
+                stroke="currentColor"
+                stroke-width="1.5"></rect>
+              <path
+                d="M7 10l2 2 4-4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
             </svg>
           </div>
           <div>
@@ -226,414 +253,413 @@ const stats = {
           New tutorials, straight to your inbox
         </h2>
         <p class="newsletter-section__body">
-          We send a short newsletter whenever new content drops. No spam, no noise —
-          just a heads-up when there's something worth watching.
+          We send a short newsletter whenever new content drops. No spam, no noise — just a heads-up
+          when there's something worth watching.
         </p>
       </div>
       <NewsletterForm />
     </div>
   </section>
-
 </BaseLayout>
 
 <script>
-  import { initCategoryFilter } from '../lib/category-filter';
-  initCategoryFilter('#home-categories', '#featured-grid > *');
+  import { initCategoryFilter } from "@/lib/category-filter";
+  initCategoryFilter("#home-categories", "#featured-grid > *");
 </script>
 
 <style>
-/* ═══════════════════════════════════════
+  /* ═══════════════════════════════════════
    HERO
 ════════════════════════════════════════ */
-.hero {
-  position: relative;
-  overflow: hidden;
-  padding: 7rem 0 5rem;
-  background: var(--color-surface-warm);
-}
-
-.hero__inner {
-  position: relative;
-  z-index: 1;
-}
-
-.hero__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-amber-700);
-  background: var(--color-amber-100);
-  border: 1px solid var(--color-amber-200);
-  padding: 0.35rem 0.9rem;
-  border-radius: 100px;
-  margin-bottom: 1.75rem;
-}
-
-.hero__badge::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-amber-500);
-}
-
-.hero__heading {
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, 6vw, 4.2rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  color: var(--color-text-primary);
-  max-width: 18ch;
-  margin-bottom: 1.5rem;
-}
-
-.hero__heading em {
-  font-style: italic;
-  color: var(--color-amber-600);
-}
-
-.hero__subheading {
-  font-size: 1.15rem;
-  line-height: 1.7;
-  color: var(--color-text-secondary);
-  max-width: 52ch;
-  margin-bottom: 2.5rem;
-}
-
-.hero__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  flex-wrap: wrap;
-  margin-bottom: 3.5rem;
-}
-
-.hero__stats {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.hero__stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.hero__stat-number {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--color-text-primary);
-}
-
-.hero__stat-label {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
-}
-
-.hero__stat-divider {
-  width: 1px;
-  height: 2.5rem;
-  background: var(--color-border);
-}
-
-/* Decorative bg elements */
-.hero__decoration {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.hero__orb {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.35;
-  filter: blur(80px);
-}
-
-.hero__orb--1 {
-  width: 500px;
-  height: 500px;
-  background: var(--color-amber-200);
-  top: -150px;
-  right: -100px;
-}
-
-.hero__orb--2 {
-  width: 300px;
-  height: 300px;
-  background: var(--color-amber-100);
-  bottom: -80px;
-  right: 30%;
-}
-
-.hero__grid-lines {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--color-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 80% 60% at 75% 40%, black 20%, transparent 100%);
-  opacity: 0.5;
-}
-
-/* ═══════════════════════════════════════
-   CATEGORIES BAR
-════════════════════════════════════════ */
-.categories-bar {
-  position: sticky;
-  top: var(--nav-height);
-  z-index: 10;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
-  padding: 0.875rem 0;
-}
-
-.categories-bar__scroll {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-
-.categories-bar__scroll::-webkit-scrollbar {
-  display: none;
-}
-
-/* ═══════════════════════════════════════
-   SECTIONS — SHARED
-════════════════════════════════════════ */
-.section {
-  padding: 5rem 0;
-}
-
-.section__header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2.5rem;
-}
-
-.section__title {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  color: var(--color-text-primary);
-  margin-bottom: 0.3rem;
-}
-
-.section__subtitle {
-  font-size: 0.95rem;
-  color: var(--color-text-secondary);
-}
-
-.section__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-amber-700);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: gap 0.2s ease;
-}
-
-.section__link:hover {
-  gap: 0.7rem;
-}
-
-/* ═══════════════════════════════════════
-   VIDEO GRID
-════════════════════════════════════════ */
-.video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.75rem;
-}
-
-/* ═══════════════════════════════════════
-   PLAYLISTS GRID
-════════════════════════════════════════ */
-.playlists-section {
-  background: var(--color-surface-warm);
-}
-
-.playlist-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-/* ═══════════════════════════════════════
-   ABOUT STRIP
-════════════════════════════════════════ */
-.about-strip {
-  padding: 5rem 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.about-strip__inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: start;
-}
-
-.about-strip__title {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
-  color: var(--color-text-primary);
-  margin-bottom: 1rem;
-}
-
-.about-strip__body {
-  font-size: 1rem;
-  line-height: 1.75;
-  color: var(--color-text-secondary);
-  margin-bottom: 1.75rem;
-}
-
-.about-strip__feature-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.feature-item__icon {
-  flex-shrink: 0;
-  width: 2.25rem;
-  height: 2.25rem;
-  background: var(--color-amber-100);
-  color: var(--color-amber-700);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.1rem;
-}
-
-.feature-item__title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 0.2rem;
-}
-
-.feature-item__desc {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  line-height: 1.55;
-}
-
-/* ═══════════════════════════════════════
-   NEWSLETTER SECTION
-════════════════════════════════════════ */
-.newsletter-section {
-  padding: 5rem 0;
-  background: var(--color-amber-700);
-}
-
-.newsletter-section__inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-}
-
-.newsletter-section__eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-amber-200);
-  margin-bottom: 0.75rem;
-}
-
-.newsletter-section__title {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-  color: #fff;
-  margin-bottom: 1rem;
-}
-
-.newsletter-section__body {
-  font-size: 0.975rem;
-  line-height: 1.7;
-  color: var(--color-amber-100);
-}
-
-/* ═══════════════════════════════════════
-   RESPONSIVE
-════════════════════════════════════════ */
-@media (max-width: 900px) {
-  .about-strip__inner,
-  .newsletter-section__inner {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-  }
-}
-
-@media (max-width: 640px) {
   .hero {
-    padding: 4.5rem 0 3.5rem;
+    position: relative;
+    overflow: hidden;
+    padding: 7rem 0 5rem;
+    background: var(--color-surface-warm);
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-amber-700);
+    background: var(--color-amber-100);
+    border: 1px solid var(--color-amber-200);
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero__badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-amber-500);
   }
 
   .hero__heading {
-    font-size: 2.4rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-text-primary);
+    max-width: 18ch;
+    margin-bottom: 1.5rem;
   }
 
-  .section {
-    padding: 3.5rem 0;
+  .hero__heading em {
+    font-style: italic;
+    color: var(--color-amber-600);
   }
 
-  .section__header {
-    flex-direction: column;
-    align-items: flex-start;
+  .hero__subheading {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    max-width: 52ch;
+    margin-bottom: 2.5rem;
   }
 
-  .video-grid,
-  .playlist-grid {
-    grid-template-columns: 1fr;
+  .hero__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    flex-wrap: wrap;
+    margin-bottom: 3.5rem;
   }
 
   .hero__stats {
-    gap: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .hero__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .hero__stat-number {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--color-text-primary);
+  }
+
+  .hero__stat-label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
   }
 
   .hero__stat-divider {
+    width: 1px;
+    height: 2.5rem;
+    background: var(--color-border);
+  }
+
+  /* Decorative bg elements */
+  .hero__decoration {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .hero__orb {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.35;
+    filter: blur(80px);
+  }
+
+  .hero__orb--1 {
+    width: 500px;
+    height: 500px;
+    background: var(--color-amber-200);
+    top: -150px;
+    right: -100px;
+  }
+
+  .hero__orb--2 {
+    width: 300px;
+    height: 300px;
+    background: var(--color-amber-100);
+    bottom: -80px;
+    right: 30%;
+  }
+
+  .hero__grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--color-grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 60% at 75% 40%, black 20%, transparent 100%);
+    opacity: 0.5;
+  }
+
+  /* ═══════════════════════════════════════
+   CATEGORIES BAR
+════════════════════════════════════════ */
+  .categories-bar {
+    position: sticky;
+    top: var(--nav-height);
+    z-index: 10;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.875rem 0;
+  }
+
+  .categories-bar__scroll {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .categories-bar__scroll::-webkit-scrollbar {
     display: none;
   }
-}
+
+  /* ═══════════════════════════════════════
+   SECTIONS — SHARED
+════════════════════════════════════════ */
+  .section {
+    padding: 5rem 0;
+  }
+
+  .section__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .section__title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--color-text-primary);
+    margin-bottom: 0.3rem;
+  }
+
+  .section__subtitle {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+  }
+
+  .section__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-amber-700);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: gap 0.2s ease;
+  }
+
+  .section__link:hover {
+    gap: 0.7rem;
+  }
+
+  /* ═══════════════════════════════════════
+   VIDEO GRID
+════════════════════════════════════════ */
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.75rem;
+  }
+
+  /* ═══════════════════════════════════════
+   PLAYLISTS GRID
+════════════════════════════════════════ */
+  .playlists-section {
+    background: var(--color-surface-warm);
+  }
+
+  .playlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* ═══════════════════════════════════════
+   ABOUT STRIP
+════════════════════════════════════════ */
+  .about-strip {
+    padding: 5rem 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .about-strip__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .about-strip__title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+  }
+
+  .about-strip__body {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.75rem;
+  }
+
+  .about-strip__feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .feature-item__icon {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    background: var(--color-amber-100);
+    color: var(--color-amber-700);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.1rem;
+  }
+
+  .feature-item__title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0.2rem;
+  }
+
+  .feature-item__desc {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+  }
+
+  /* ═══════════════════════════════════════
+   NEWSLETTER SECTION
+════════════════════════════════════════ */
+  .newsletter-section {
+    padding: 5rem 0;
+    background: var(--color-amber-700);
+  }
+
+  .newsletter-section__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .newsletter-section__eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-amber-200);
+    margin-bottom: 0.75rem;
+  }
+
+  .newsletter-section__title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 1rem;
+  }
+
+  .newsletter-section__body {
+    font-size: 0.975rem;
+    line-height: 1.7;
+    color: var(--color-amber-100);
+  }
+
+  /* ═══════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .about-strip__inner,
+    .newsletter-section__inner {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding: 4.5rem 0 3.5rem;
+    }
+
+    .hero__heading {
+      font-size: 2.4rem;
+    }
+
+    .section {
+      padding: 3.5rem 0;
+    }
+
+    .section__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .video-grid,
+    .playlist-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero__stats {
+      gap: 1.25rem;
+    }
+
+    .hero__stat-divider {
+      display: none;
+    }
+  }
 </style>

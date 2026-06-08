@@ -1,12 +1,9 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ErrorPage from '../components/ErrorPage.astro';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ErrorPage from "@/components/ErrorPage.astro";
 ---
 
-<BaseLayout
-  title="Server error — Ubuhanga"
-  description="Something went wrong on our end."
->
+<BaseLayout title="Server error — Ubuhanga" description="Something went wrong on our end.">
   <ErrorPage
     code="500"
     title="Server error"

@@ -1,6 +1,6 @@
 ---
-import AdminLayout from "../../../layouts/AdminLayout.astro";
-import { getDB } from "../../../lib/firestore";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { getDB } from "@/lib/firestore";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/admin/videos");
@@ -13,9 +13,7 @@ if (!snap.exists) {
 }
 
 const data = snap.data()!;
-const publishedAt = data.publishedAt
-  ? String(data.publishedAt).slice(0, 10)
-  : "";
+const publishedAt = data.publishedAt ? String(data.publishedAt).slice(0, 10) : "";
 
 const catsSnap = await db.collection("categories").orderBy("name").get();
 const categories = catsSnap.docs.map((d) => d.data().name as string);
@@ -32,7 +30,9 @@ const playlists = plSnap.docs.map((d) => ({ id: d.id, title: d.data().title }));
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Description</span>
-      <textarea class="admin-field__textarea" name="description" rows="3">{data.description ?? ""}</textarea>
+      <textarea class="admin-field__textarea" name="description" rows="3"
+        >{data.description ?? ""}</textarea
+      >
     </label>
     <label class="admin-field">
       <span class="admin-field__label">YouTube ID</span>
@@ -50,14 +50,26 @@ const playlists = plSnap.docs.map((d) => ({ id: d.id, title: d.data().title }));
       <span class="admin-field__label">Category</span>
       <select class="admin-field__select" name="category" required>
         <option value="">— Select —</option>
-        {categories.filter(c => c !== "All").map(c => (
-          <option value={c} selected={data.category === c}>{c}</option>
-        ))}
+        {
+          categories
+            .filter((c) => c !== "All")
+            .map((c) => (
+              <option value={c} selected={data.category === c}>
+                {c}
+              </option>
+            ))
+        }
       </select>
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Published at</span>
-      <input class="admin-field__input" name="publishedAt" type="date" value={publishedAt} required />
+      <input
+        class="admin-field__input"
+        name="publishedAt"
+        type="date"
+        value={publishedAt}
+        required
+      />
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Slug</span>
@@ -67,15 +79,22 @@ const playlists = plSnap.docs.map((d) => ({ id: d.id, title: d.data().title }));
       <span class="admin-field__label">Playlist</span>
       <select class="admin-field__select" name="playlistId">
         <option value="">— None —</option>
-        {playlists.map(p => (
-          <option value={p.id} selected={data.playlistId === p.id}>{p.title}</option>
-        ))}
+        {
+          playlists.map((p) => (
+            <option value={p.id} selected={data.playlistId === p.id}>
+              {p.title}
+            </option>
+          ))
+        }
       </select>
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Tags (comma-separated)</span>
-      <input class="admin-field__input" name="tags"
-        value={(Array.isArray(data.tags) ? data.tags : []).join(", ")} />
+      <input
+        class="admin-field__input"
+        name="tags"
+        value={(Array.isArray(data.tags) ? data.tags : []).join(", ")}
+      />
     </label>
     <div class="admin-form__actions">
       <button type="submit" class="admin-btn admin-btn--primary">Update</button>
@@ -86,8 +105,7 @@ const playlists = plSnap.docs.map((d) => ({ id: d.id, title: d.data().title }));
 </AdminLayout>
 
 <script>
-  import { getFirebaseDB } from "../../../lib/firebase-client";
-  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
   import { onAuthStateChanged } from "firebase/auth";
   import { doc, updateDoc } from "firebase/firestore";
 
@@ -95,7 +113,10 @@ const playlists = plSnap.docs.map((d) => ({ id: d.id, title: d.data().title }));
   const db = getFirebaseDB();
 
   onAuthStateChanged(auth, (user) => {
-    if (!user) { window.location.href = "/admin"; return; }
+    if (!user) {
+      window.location.href = "/admin";
+      return;
+    }
   });
 
   const videoId = window.location.pathname.split("/").pop()!;
@@ -106,7 +127,9 @@ const playlists = plSnap.docs.map((d) => ({ id: d.id, title: d.data().title }));
     errEl.hidden = true;
     const fd = new FormData(e.target as HTMLFormElement);
     const formData: Record<string, unknown> = {};
-    fd.forEach((val, key) => { formData[key] = val; });
+    fd.forEach((val, key) => {
+      formData[key] = val;
+    });
 
     if (!formData.youtubeId || !/^[a-zA-Z0-9_-]{11}$/.test(formData.youtubeId as string)) {
       errEl.textContent = "YouTube ID must be exactly 11 characters.";
@@ -119,13 +142,19 @@ const playlists = plSnap.docs.map((d) => ({ id: d.id, title: d.data().title }));
       return;
     }
     if (!formData.slug) {
-      formData.slug = (formData.title as string).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      formData.slug = (formData.title as string)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
     }
     if (!formData.thumbnail) {
       formData.thumbnail = `https://img.youtube.com/vi/${formData.youtubeId}/maxresdefault.jpg`;
     }
     if (formData.tags) {
-      formData.tags = (formData.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean);
+      formData.tags = (formData.tags as string)
+        .split(",")
+        .map((t: string) => t.trim())
+        .filter(Boolean);
     } else {
       formData.tags = [];
     }

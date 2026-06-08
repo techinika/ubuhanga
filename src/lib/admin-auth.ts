@@ -1,27 +1,8 @@
-import {
-  initializeApp,
-  getApps,
-  cert,
-} from "firebase-admin/app";
+import { getAdminApp } from "./firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
 import type { AstroCookies } from "astro";
-
-function getAdminApp() {
-  if (getApps().length === 0) {
-    return initializeApp({
-      credential: cert({
-        projectId: import.meta.env.FIREBASE_ADMIN_PROJECT_ID,
-        clientEmail: import.meta.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-        privateKey: import.meta.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(
-          /\\n/g,
-          "\n",
-        ),
-      }),
-    });
-  }
-  return getApps()[0];
-}
+import { COLLECTIONS } from "./constants";
 
 export async function verifyAdminSession(
   cookies: AstroCookies,
@@ -33,7 +14,7 @@ export async function verifyAdminSession(
     getAdminApp();
     const decoded = await getAuth().verifySessionCookie(sessionCookie, true);
     const db = getFirestore();
-    const adminDoc = await db.collection("admins").doc(decoded.uid).get();
+    const adminDoc = await db.collection(COLLECTIONS.ADMINS).doc(decoded.uid).get();
     if (!adminDoc.exists) return null;
     return { uid: decoded.uid, email: decoded.email || "" };
   } catch {
@@ -48,7 +29,7 @@ export async function createAdminSessionCookie(
     getAdminApp();
     const decoded = await getAuth().verifyIdToken(idToken);
     const db = getFirestore();
-    const adminDoc = await db.collection("admins").doc(decoded.uid).get();
+    const adminDoc = await db.collection(COLLECTIONS.ADMINS).doc(decoded.uid).get();
     if (!adminDoc.exists) return null;
     const expiresIn = 60 * 60 * 24 * 5 * 1000;
     const sessionCookie = await getAuth().createSessionCookie(idToken, {
@@ -60,9 +41,7 @@ export async function createAdminSessionCookie(
   }
 }
 
-export async function revokeAdminSession(
-  cookies: AstroCookies,
-): Promise<void> {
+export async function revokeAdminSession(cookies: AstroCookies): Promise<void> {
   const sessionCookie = cookies.get("admin-session")?.value;
   if (!sessionCookie) return;
   try {

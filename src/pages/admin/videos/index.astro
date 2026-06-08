@@ -1,53 +1,67 @@
 ---
-import AdminLayout from "../../../layouts/AdminLayout.astro";
-import { getAllVideos } from "../../../lib/firestore";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { getPaginatedVideos } from "@/lib/firestore";
 
-const videos = await getAllVideos();
+const page = Math.max(1, Number(Astro.url.searchParams.get("page")) || 1);
+const { items: videos, pageInfo } = await getPaginatedVideos(page);
 ---
 
 <AdminLayout title="Videos — Admin — Ubuhanga" heading="Videos">
   <div class="admin-bar">
-    <p class="admin-bar__title">All videos</p>
+    <p class="admin-bar__title">Videos ({pageInfo.total})</p>
     <a href="/admin/videos/new" class="admin-btn admin-btn--primary">+ Add video</a>
   </div>
 
   {videos.length === 0 ? (
     <p class="admin-empty">No videos yet.</p>
   ) : (
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Duration</th>
-            <th>Views</th>
-            <th class="admin-table__cell-actions">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="videos-tbody">
-          {videos.map((v) => (
+    <>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
             <tr>
-              <td class="admin-table__cell-title">{v.title}</td>
-              <td>{v.category}</td>
-              <td>{v.duration}</td>
-              <td>{v.views ?? 0}</td>
-              <td class="admin-table__cell-actions">
-                <a href={`/admin/videos/${v.id}`} class="admin-btn-sm">Edit</a>
-                <button class="admin-btn-sm admin-btn-sm--danger" data-delete-video={v.id}>Delete</button>
-              </td>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Duration</th>
+              <th>Views</th>
+              <th class="admin-table__cell-actions">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody id="videos-tbody">
+            {videos.map((v) => (
+              <tr>
+                <td class="admin-table__cell-title">{v.title}</td>
+                <td>{v.category}</td>
+                <td>{v.duration}</td>
+                <td>{v.views ?? 0}</td>
+                <td class="admin-table__cell-actions">
+                  <a href={`/admin/videos/${v.id}`} class="admin-btn-sm">Edit</a>
+                  <button class="admin-btn-sm admin-btn-sm--danger" data-delete-video={v.id}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {pageInfo.totalPages > 1 && (
+        <div class="admin-pagination">
+          {pageInfo.hasPrev && (
+            <a href={`/admin/videos?page=${page - 1}`} class="admin-btn-sm">&larr; Previous</a>
+          )}
+          <span class="admin-pagination__info">Page {pageInfo.page} of {pageInfo.totalPages}</span>
+          {pageInfo.hasNext && (
+            <a href={`/admin/videos?page=${page + 1}`} class="admin-btn-sm">Next &rarr;</a>
+          )}
+        </div>
+      )}
+    </>
   )}
 </AdminLayout>
 
 <script>
-  import { getFirebaseDB } from "../../../lib/firebase-client";
+  import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
   import { onAuthStateChanged } from "firebase/auth";
-  import { getFirebaseAuth } from "../../../lib/firebase-client";
   import { doc, deleteDoc } from "firebase/firestore";
 
   const auth = getFirebaseAuth();
@@ -62,7 +76,8 @@ const videos = await getAllVideos();
     document.querySelectorAll("[data-delete-video]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-delete-video")!;
-        if (!confirm("Delete this video?")) return;
+        const title = btn.closest("tr")?.querySelector(".admin-table__cell-title")?.textContent?.trim() || "this video";
+        if (!confirm(`Delete "${title}"?`)) return;
         try {
           await deleteDoc(doc(db, "videos", id));
           btn.closest("tr")?.remove();
@@ -74,3 +89,19 @@ const videos = await getAllVideos();
     });
   }
 </script>
+
+<style is:global>
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 0;
+}
+
+.admin-pagination__info {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+</style>

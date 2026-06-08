@@ -1,8 +1,5 @@
 import type { APIRoute } from "astro";
-import {
-  createAdminSessionCookie,
-  revokeAdminSession,
-} from "../../../lib/admin-auth";
+import { createAdminSessionCookie, revokeAdminSession } from "@/lib/admin-auth";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -16,10 +13,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     const result = await createAdminSessionCookie(idToken);
     if (!result) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - not an admin" }),
-        { status: 403, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized - not an admin" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
     cookies.set("admin-session", result.sessionCookie, {
       path: "/",

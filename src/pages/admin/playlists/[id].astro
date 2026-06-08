@@ -1,6 +1,6 @@
 ---
-import AdminLayout from "../../../layouts/AdminLayout.astro";
-import { getDB } from "../../../lib/firestore";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { getDB } from "@/lib/firestore";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/admin/playlists");
@@ -23,7 +23,9 @@ const data = snap.data()!;
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Description</span>
-      <textarea class="admin-field__textarea" name="description" rows="3">{data.description ?? ""}</textarea>
+      <textarea class="admin-field__textarea" name="description" rows="3"
+        >{data.description ?? ""}</textarea
+      >
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Thumbnail URL</span>
@@ -35,8 +37,11 @@ const data = snap.data()!;
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Tags (comma-separated)</span>
-      <input class="admin-field__input" name="tags"
-        value={(Array.isArray(data.tags) ? data.tags : []).join(", ")} />
+      <input
+        class="admin-field__input"
+        name="tags"
+        value={(Array.isArray(data.tags) ? data.tags : []).join(", ")}
+      />
     </label>
     <div class="admin-form__actions">
       <button type="submit" class="admin-btn admin-btn--primary">Update</button>
@@ -47,8 +52,7 @@ const data = snap.data()!;
 </AdminLayout>
 
 <script>
-  import { getFirebaseDB } from "../../../lib/firebase-client";
-  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
   import { onAuthStateChanged } from "firebase/auth";
   import { doc, updateDoc } from "firebase/firestore";
 
@@ -56,7 +60,10 @@ const data = snap.data()!;
   const db = getFirebaseDB();
 
   onAuthStateChanged(auth, (user) => {
-    if (!user) { window.location.href = "/admin"; return; }
+    if (!user) {
+      window.location.href = "/admin";
+      return;
+    }
   });
 
   const playlistId = window.location.pathname.split("/").pop()!;
@@ -67,15 +74,23 @@ const data = snap.data()!;
     errEl.hidden = true;
     const fd = new FormData(e.target as HTMLFormElement);
     const formData: Record<string, unknown> = {};
-    fd.forEach((val, key) => { formData[key] = val; });
+    fd.forEach((val, key) => {
+      formData[key] = val;
+    });
 
     if (formData.tags) {
-      formData.tags = (formData.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean);
+      formData.tags = (formData.tags as string)
+        .split(",")
+        .map((t: string) => t.trim())
+        .filter(Boolean);
     } else {
       formData.tags = [];
     }
     if (!formData.slug) {
-      formData.slug = (formData.title as string).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      formData.slug = (formData.title as string)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
     }
 
     try {

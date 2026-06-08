@@ -1,5 +1,38 @@
 import { defineMiddleware } from "astro/middleware";
-import { verifyAdminSession } from "./lib/admin-auth";
+import { verifyAdminSession } from "@/lib/admin-auth";
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimit(ip: string, maxReqs = 10, windowMs = 60000): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= maxReqs;
+}
+
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.youtube.com https://www.googletagmanager.com",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https://img.youtube.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
+  "frame-src https://www.youtube-nocookie.com https://www.youtube.com",
+  "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com wss://*.firebaseio.com",
+  "font-src 'self'",
+  "media-src 'self'",
+  "manifest-src 'self'",
+].join("; ");
+
+const SECURITY_HEADERS = {
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+  "X-DNS-Prefetch-Control": "on",
+};
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
@@ -23,5 +56,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.adminUser = user;
   }
 
-  return next();
+  if (pathname.startsWith("/api/")) {
+    const ip = context.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!rateLimit(ip)) {
+      return new Response(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json", "Retry-After": "60" },
+      });
+    }
+  }
+
+  const response = await next();
+
+  if (!pathname.startsWith("/api/")) {
+    for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+      response.headers.set(key, value);
+    }
+    if (!pathname.startsWith("/admin/")) {
+      response.headers.set("Content-Security-Policy", CSP);
+    }
+  }
+
+  return response;
 });

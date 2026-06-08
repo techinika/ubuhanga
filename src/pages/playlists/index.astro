@@ -2,11 +2,11 @@
 // src/pages/playlists/index.astro
 // All playlists — browse curated learning paths
 
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PlaylistCard from '../../components/PlaylistCard.astro';
-import GoogleAd from '../../components/GoogleAd.astro';
-import EmptyState from '../../components/EmptyState.astro';
-import { getPlaylists } from '../../lib/firestore';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PlaylistCard from "@/components/PlaylistCard.astro";
+import GoogleAd from "@/components/GoogleAd.astro";
+import EmptyState from "@/components/EmptyState.astro";
+import { getPlaylists } from "@/lib/firestore";
 
 const allPlaylists = await getPlaylists(50);
 ---
@@ -15,19 +15,29 @@ const allPlaylists = await getPlaylists(50);
   title="Playlists — Ubuhanga"
   description="Follow curated learning paths in Kinyarwanda covering full-stack development, DevOps, Python, and databases."
 >
-  <script type="application/ld+json" set:html={JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://ubuhanga.techinika.com" },
-      { "@type": "ListItem", "position": 2, "name": "Playlists", "item": "https://ubuhanga.techinika.com/playlists" },
-    ],
-  })} />
+  <script is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://ubuhanga.techinika.com" },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Playlists",
+          item: "https://ubuhanga.techinika.com/playlists",
+        },
+      ],
+    })}
+  />
 
   <section class="page-header">
     <div class="container">
       <h1 class="page-header__title">Learning paths</h1>
-      <p class="page-header__subtitle">{allPlaylists.length} curated playlists to guide your learning</p>
+      <p class="page-header__subtitle">
+        {allPlaylists.length} curated playlists to guide your learning
+      </p>
     </div>
   </section>
 
@@ -35,61 +45,67 @@ const allPlaylists = await getPlaylists(50);
 
   <section class="playlists-page">
     <div class="container">
-      {allPlaylists.length > 0 ? (
-        <div class="playlist-grid" role="list">
-          {allPlaylists.map((playlist) => (
-            <PlaylistCard playlist={playlist} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState icon="playlist" title="No playlists yet" message="Learning paths will appear here once they are created." />
-      )}
+      {
+        allPlaylists.length > 0 ? (
+          <div class="playlist-grid" role="list">
+            {allPlaylists.map((playlist) => (
+              <PlaylistCard playlist={playlist} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon="playlist"
+            title="No playlists yet"
+            message="Learning paths will appear here once they are created."
+          />
+        )
+      }
     </div>
   </section>
 </BaseLayout>
 
 <style>
-.page-header {
-  padding: 4rem 0 2.5rem;
-  background: var(--color-surface-warm);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.page-header__title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--color-text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.page-header__subtitle {
-  font-size: 1rem;
-  color: var(--color-text-muted);
-}
-
-.playlists-page {
-  padding: 3rem 0 5rem;
-}
-
-.playlist-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-@media (max-width: 640px) {
   .page-header {
-    padding: 2.5rem 0 1.5rem;
+    padding: 4rem 0 2.5rem;
+    background: var(--color-surface-warm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .page-header__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header__subtitle {
+    font-size: 1rem;
+    color: var(--color-text-muted);
   }
 
   .playlists-page {
-    padding: 2rem 0 3rem;
+    padding: 3rem 0 5rem;
   }
 
   .playlist-grid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
   }
-}
+
+  @media (max-width: 640px) {
+    .page-header {
+      padding: 2.5rem 0 1.5rem;
+    }
+
+    .playlists-page {
+      padding: 2rem 0 3rem;
+    }
+
+    .playlist-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>

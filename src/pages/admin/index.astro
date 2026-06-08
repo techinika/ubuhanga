@@ -1,24 +1,41 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="Admin — Ubuhanga" description="Sign in to manage content." noIndex>
   <div class="admin-signin">
     <div class="admin-signin__card">
       <svg width="40" height="40" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-        <rect width="28" height="28" rx="7" fill="#B45309"/>
-        <path d="M7 20V10.5L14 7l7 3.5V20" stroke="#FDE68A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M11 20v-6h6v6" stroke="#FDE68A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="14" cy="10" r="1.2" fill="#FBBF24"/>
+        <rect width="28" height="28" rx="7" fill="#B45309"></rect>
+        <path
+          d="M7 20V10.5L14 7l7 3.5V20"
+          stroke="#FDE68A"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+        <path
+          d="M11 20v-6h6v6"
+          stroke="#FDE68A"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+        <circle cx="14" cy="10" r="1.2" fill="#FBBF24"></circle>
       </svg>
       <h1 class="admin-signin__title">Admin access</h1>
       <p class="admin-signin__desc">Sign in with your Google account to manage content.</p>
       <button id="admin-signin-btn" class="admin-signin__btn">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M18.5 10.2c0-.6-.05-1.2-.15-1.8H10v3.4h4.75a4 4 0 01-1.75 2.6v2.2h2.85c1.65-1.5 2.65-3.7 2.65-6.4z" fill="#4285F4"/>
-          <path d="M10 19c2.4 0 4.4-.8 5.85-2.2l-2.85-2.2a5.3 5.3 0 01-3 .85c-2.3 0-4.25-1.55-4.95-3.65H3.1v2.25A9 9 0 0010 19z" fill="#34A853"/>
-          <path d="M5.05 11.8a5.4 5.4 0 010-3.6V5.95H3.1a9 9 0 000 8.1l1.95-2.25z" fill="#FBBC05"/>
-          <path d="M10 3.85c1.3 0 2.45.45 3.35 1.35l2.5-2.5A8.5 8.5 0 0010 1a9 9 0 00-6.9 4.95l1.95 2.25c.7-2.1 2.65-3.65 4.95-3.65z" fill="#EA4335"/>
+          <path
+            d="M18.5 10.2c0-.6-.05-1.2-.15-1.8H10v3.4h4.75a4 4 0 01-1.75 2.6v2.2h2.85c1.65-1.5 2.65-3.7 2.65-6.4z"
+            fill="#4285F4"></path>
+          <path
+            d="M10 19c2.4 0 4.4-.8 5.85-2.2l-2.85-2.2a5.3 5.3 0 01-3 .85c-2.3 0-4.25-1.55-4.95-3.65H3.1v2.25A9 9 0 0010 19z"
+            fill="#34A853"></path>
+          <path d="M5.05 11.8a5.4 5.4 0 010-3.6V5.95H3.1a9 9 0 000 8.1l1.95-2.25z" fill="#FBBC05"
+          ></path>
+          <path
+            d="M10 3.85c1.3 0 2.45.45 3.35 1.35l2.5-2.5A8.5 8.5 0 0010 1a9 9 0 00-6.9 4.95l1.95 2.25c.7-2.1 2.65-3.65 4.95-3.65z"
+            fill="#EA4335"></path>
         </svg>
         Sign in with Google
       </button>
@@ -28,7 +45,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 </BaseLayout>
 
 <script>
-  import { getFirebaseAuth, googleProvider } from "../../lib/firebase-client";
+  import { getFirebaseAuth, googleProvider } from "@/lib/firebase-client";
   import { signInWithPopup } from "firebase/auth";
 
   const auth = getFirebaseAuth();
@@ -60,72 +77,74 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 </script>
 
 <style is:global>
-.admin-signin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  padding: 4rem 1rem;
-}
+  .admin-signin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 4rem 1rem;
+  }
 
-.admin-signin__card {
-  text-align: center;
-  max-width: 380px;
-  padding: 3rem 2rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-}
+  .admin-signin__card {
+    text-align: center;
+    max-width: 380px;
+    padding: 3rem 2rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
 
-.admin-signin__title {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 1rem 0 0.5rem;
-}
+  .admin-signin__title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 1rem 0 0.5rem;
+  }
 
-.admin-signin__desc {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  margin-bottom: 1.5rem;
-}
+  .admin-signin__desc {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+  }
 
-.admin-signin__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.7rem 1.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  background: #fff;
-  color: #333;
-  border: 1.5px solid #ddd;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: box-shadow var(--transition-fast);
-}
-.admin-signin__btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-.admin-signin__error {
-  font-size: 0.85rem;
-  color: #b91c1c;
-  background: #fef2f2;
-  padding: 0.5rem 0.875rem;
-  border-radius: var(--radius-md);
-  margin-top: 1rem;
-}
-
-@media (prefers-color-scheme: dark) {
   .admin-signin__btn {
-    background: #222;
-    color: #eee;
-    border-color: #444;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: #fff;
+    color: #333;
+    border: 1.5px solid #ddd;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: box-shadow var(--transition-fast);
   }
+  .admin-signin__btn:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
   .admin-signin__error {
-    background: rgba(248,113,113,0.15);
-    color: #fca5a5;
+    font-size: 0.85rem;
+    color: #b91c1c;
+    background: #fef2f2;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--radius-md);
+    margin-top: 1rem;
   }
-}
+
+  @media (prefers-color-scheme: dark) {
+    .admin-signin__btn {
+      background: #222;
+      color: #eee;
+      border-color: #444;
+    }
+    .admin-signin__error {
+      background: rgba(248, 113, 113, 0.15);
+      color: #fca5a5;
+    }
+  }
 </style>

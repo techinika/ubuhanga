@@ -1,5 +1,5 @@
 ---
-import AdminLayout from "../../../layouts/AdminLayout.astro";
+import AdminLayout from "@/layouts/AdminLayout.astro";
 ---
 
 <AdminLayout title="Add playlist — Admin — Ubuhanga" heading="Add playlist">
@@ -18,7 +18,11 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Slug</span>
-      <input class="admin-field__input" name="slug" placeholder="Auto-generated from title if empty" />
+      <input
+        class="admin-field__input"
+        name="slug"
+        placeholder="Auto-generated from title if empty"
+      />
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Tags (comma-separated)</span>
@@ -33,8 +37,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <script>
-  import { getFirebaseDB } from "../../../lib/firebase-client";
-  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
   import { onAuthStateChanged } from "firebase/auth";
   import { collection, addDoc } from "firebase/firestore";
 
@@ -42,7 +45,10 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
   const db = getFirebaseDB();
 
   onAuthStateChanged(auth, (user) => {
-    if (!user) { window.location.href = "/admin"; return; }
+    if (!user) {
+      window.location.href = "/admin";
+      return;
+    }
   });
 
   document.getElementById("playlist-form")?.addEventListener("submit", async (e) => {
@@ -51,15 +57,23 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     errEl.hidden = true;
     const fd = new FormData(e.target as HTMLFormElement);
     const data: Record<string, unknown> = {};
-    fd.forEach((val, key) => { data[key] = val; });
+    fd.forEach((val, key) => {
+      data[key] = val;
+    });
 
     if (data.tags) {
-      data.tags = (data.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean);
+      data.tags = (data.tags as string)
+        .split(",")
+        .map((t: string) => t.trim())
+        .filter(Boolean);
     } else {
       data.tags = [];
     }
     if (!data.slug) {
-      data.slug = (data.title as string).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      data.slug = (data.title as string)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
     }
 
     try {

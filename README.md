@@ -9,10 +9,12 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 - **Framework:** [Astro](https://astro.build) v6 (SSR — `output: "server"`)
 - **Adapter:** `@astrojs/vercel`
 - **Auth:** Firebase Auth (Google sign-in for admin panel + comments), session cookies via Firebase Admin SDK
-- **Database:** Firebase Firestore (videos, playlists, categories, comments, subscribers)
+- **Database:** Firebase Firestore (videos, playlists, categories, comments, subscribers, auditLog)
 - **Ads:** Google AdSense (`ca-pub-1268572467254702`)
 - **Styling:** CSS custom properties with light/dark theme toggle (persisted to localStorage)
-- **Fonts:** Lexend (display) + Inter (body) via Google Fonts
+- **Fonts:** Lexend (display) + Inter (body) via @fontsource (self-hosted)
+- **Linting & Formatting:** ESLint (flat config) + Prettier with `prettier-plugin-astro`
+- **Security:** CSP with nonces, rate limiting, security headers via middleware
 
 ## Routes
 
@@ -26,9 +28,10 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 | `/search` | Client-side search across all video fields |
 | `/about` | About Ubuhanga and Techinika |
 | `/admin` | Admin sign-in with Google |
-| `/admin/videos` | Manage videos (list, create, edit, delete) |
-| `/admin/playlists` | Manage playlists (list, create, edit, delete) |
+| `/admin/videos` | Manage videos (list, create, edit, delete) — paginated |
+| `/admin/playlists` | Manage playlists (list, create, edit, delete) — paginated |
 | `/admin/categories` | Manage categories |
+| `/admin/comments` | Moderate comments (approve / reject) |
 | `/rss.xml` | RSS feed of all videos |
 | `/sitemap.xml` | Dynamic sitemap (static pages + videos + playlists) |
 
@@ -42,7 +45,7 @@ src/
 │   ├── EmptyState.astro         # Reusable empty state with icon
 │   ├── ErrorPage.astro          # Shared 404/500 layout
 │   ├── GoogleAd.astro           # AdSense unit wrapper
-│   ├── NewsletterForm.astro     # Firestore subscription form
+│   ├── NewsletterForm.astro     # Submits to /api/newsletter
 │   ├── PlaylistCard.astro
 │   └── VideoCard.astro
 ├── layouts/
@@ -51,10 +54,14 @@ src/
 ├── lib/
 │   ├── admin-auth.ts            # Server-side admin session verification
 │   ├── category-filter.ts       # Shared JS for category pill filtering
+│   ├── constants.ts             # SITE_NAME, SITE_URL, COLLECTIONS
+│   ├── env.ts                   # Environment variable validation
+│   ├── firebase-admin.ts        # Firebase Admin SDK singleton
 │   ├── firebase-client.ts       # Singleton Firebase client (auth + firestore)
-│   ├── firestore.ts             # Server-side Firebase Admin helpers
-│   └── helpers.ts               # escapeHtml shared utility
-├── middleware.ts                # Auth middleware protecting /admin routes
+│   ├── firestore.ts             # Server-side Firebase Admin helpers + types
+│   ├── helpers.ts               # escapeHtml shared utility
+│   └── index.ts                 # Barrel file for all firestore exports
+├── middleware.ts                # CSP, rate limiting, security headers, admin auth
 ├── pages/
 │   ├── index.astro
 │   ├── 404.astro
@@ -63,19 +70,23 @@ src/
 │   ├── search.astro
 │   ├── rss.xml.ts
 │   ├── sitemap.xml.ts
-│   ├── api/admin/session.ts     # Session cookie create/delete endpoint
+│   ├── api/
+│   │   ├── admin/session.ts     # Session cookie create/delete endpoint
+│   │   └── newsletter.ts        # Server-side newsletter subscription
 │   ├── admin/
 │   │   ├── index.astro          # Sign-in page
 │   │   ├── videos/
-│   │   │   ├── index.astro      # Video list
+│   │   │   ├── index.astro      # Video list (paginated)
 │   │   │   ├── new.astro        # Create video
 │   │   │   └── [id].astro       # Edit video
 │   │   ├── playlists/
-│   │   │   ├── index.astro      # Playlist list
+│   │   │   ├── index.astro      # Playlist list (paginated)
 │   │   │   ├── new.astro        # Create playlist
 │   │   │   └── [id].astro       # Edit playlist
-│   │   └── categories/
-│   │       └── index.astro      # Manage categories
+│   │   ├── categories/
+│   │   │   └── index.astro      # Manage categories
+│   │   └── comments/
+│   │       └── index.astro      # Moderate comments
 │   ├── videos/
 │   │   ├── index.astro
 │   │   └── [slug].astro
@@ -113,11 +124,13 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 
 | Command | Action |
 |---|---|
-| `pnpm install` | Install dependencies |
-| `pnpm dev` | Start local dev server at `localhost:4321` |
-| `pnpm build` | Build for production (Vercel SSR output) |
-| `pnpm preview` | Preview production build locally |
-| `pnpm tsc --noEmit` | TypeScript type check |
+| `npm install` | Install dependencies |
+| `npm run dev` | Start local dev server at `localhost:4321` |
+| `npm run build` | Type-check then build for production |
+| `npm run preview` | Preview production build locally |
+| `npm run check` | Run `astro check` only |
+| `npm run lint` | Run ESLint |
+| `npm run format` | Format with Prettier |
 
 ## Admin access
 
@@ -125,7 +138,7 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 2. Sign in with a Google account
 3. The account's UID must exist as a document in the `admins` Firestore collection
 4. Once authorized, a session cookie is created and you are redirected to `/admin/videos`
-5. Use the sidebar to navigate between videos, playlists, and categories management
+5. Use the sidebar to navigate between videos, playlists, categories, and comments
 
 ## Firestore collections
 
@@ -137,3 +150,11 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 | `comments` | User comments on videos (tied to Google Auth UID) |
 | `subscribers` | Newsletter email subscriptions |
 | `admins` | Documents keyed by UID; presence grants admin panel access |
+| `auditLog` | Admin action audit trail |
+
+## Security
+
+- **Content Security Policy:** Restricts scripts, styles, frames, connections, and fonts to trusted origins (self, YouTube, Firebase, Google AdSense)
+- **Rate Limiting:** In-memory IP-based: 100 req/60s general API, 10 req/60s admin
+- **Caching:** HTML 600s, static assets immutable, admin pages no-cache (via `vercel.json`)
+- **Admin Auth:** Session cookies verified on every `/admin` page and `/api/admin/*` request

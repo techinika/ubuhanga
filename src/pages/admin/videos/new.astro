@@ -1,7 +1,6 @@
 ---
-import AdminLayout from "../../../layouts/AdminLayout.astro";
-import { getCategories } from "../../../lib/firestore";
-import { getPlaylists } from "../../../lib/firestore";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { getCategories, getPlaylists } from "@/lib/firestore";
 
 const categories = await getCategories();
 const playlists = await getPlaylists();
@@ -23,7 +22,11 @@ const playlists = await getPlaylists();
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Thumbnail URL</span>
-      <input class="admin-field__input" name="thumbnail" placeholder="Leave blank to auto-generate from YouTube ID" />
+      <input
+        class="admin-field__input"
+        name="thumbnail"
+        placeholder="Leave blank to auto-generate from YouTube ID"
+      />
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Duration</span>
@@ -33,7 +36,7 @@ const playlists = await getPlaylists();
       <span class="admin-field__label">Category</span>
       <select class="admin-field__select" name="category" required>
         <option value="">— Select —</option>
-        {categories.filter(c => c !== "All").map(c => <option value={c}>{c}</option>)}
+        {categories.filter((c) => c !== "All").map((c) => <option value={c}>{c}</option>)}
       </select>
     </label>
     <label class="admin-field">
@@ -42,13 +45,17 @@ const playlists = await getPlaylists();
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Slug</span>
-      <input class="admin-field__input" name="slug" placeholder="Auto-generated from title if empty" />
+      <input
+        class="admin-field__input"
+        name="slug"
+        placeholder="Auto-generated from title if empty"
+      />
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Playlist</span>
       <select class="admin-field__select" name="playlistId">
         <option value="">— None —</option>
-        {playlists.map(p => <option value={p.id}>{p.title}</option>)}
+        {playlists.map((p) => <option value={p.id}>{p.title}</option>)}
       </select>
     </label>
     <label class="admin-field">
@@ -64,8 +71,7 @@ const playlists = await getPlaylists();
 </AdminLayout>
 
 <script>
-  import { getFirebaseDB } from "../../../lib/firebase-client";
-  import { getFirebaseAuth } from "../../../lib/firebase-client";
+  import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
   import { onAuthStateChanged } from "firebase/auth";
   import { collection, addDoc } from "firebase/firestore";
 
@@ -73,7 +79,10 @@ const playlists = await getPlaylists();
   const db = getFirebaseDB();
 
   onAuthStateChanged(auth, (user) => {
-    if (!user) { window.location.href = "/admin"; return; }
+    if (!user) {
+      window.location.href = "/admin";
+      return;
+    }
   });
 
   document.getElementById("video-form")?.addEventListener("submit", async (e) => {
@@ -82,7 +91,9 @@ const playlists = await getPlaylists();
     errEl.hidden = true;
     const fd = new FormData(e.target as HTMLFormElement);
     const data: Record<string, unknown> = {};
-    fd.forEach((val, key) => { data[key] = val; });
+    fd.forEach((val, key) => {
+      data[key] = val;
+    });
 
     if (!data.youtubeId || !/^[a-zA-Z0-9_-]{11}$/.test(data.youtubeId as string)) {
       errEl.textContent = "YouTube ID must be exactly 11 characters.";
@@ -95,13 +106,19 @@ const playlists = await getPlaylists();
       return;
     }
     if (!data.slug) {
-      data.slug = (data.title as string).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      data.slug = (data.title as string)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
     }
     if (!data.thumbnail) {
       data.thumbnail = `https://img.youtube.com/vi/${data.youtubeId}/maxresdefault.jpg`;
     }
     if (data.tags) {
-      data.tags = (data.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean);
+      data.tags = (data.tags as string)
+        .split(",")
+        .map((t: string) => t.trim())
+        .filter(Boolean);
     } else {
       data.tags = [];
     }
