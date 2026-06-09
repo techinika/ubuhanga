@@ -1,7 +1,7 @@
 import { initializeApp, getApps, cert, type ServiceAccount } from "firebase-admin/app";
 import { validateEnv } from "./env";
 
-if (typeof process !== "undefined") validateEnv();
+if (typeof import.meta.env !== "undefined") validateEnv();
 
 export function getAdminApp() {
   if (getApps().length > 0) return getApps()[0];

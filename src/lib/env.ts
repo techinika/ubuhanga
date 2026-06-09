@@ -12,10 +12,10 @@ const requiredVars = [
 ] as const;
 
 export function validateEnv(): void {
-  if (typeof process === "undefined") return;
+  if (typeof import.meta.env === "undefined") return;
   const missing: string[] = [];
   for (const key of requiredVars) {
-    if (!process.env[key]) {
+    if (!import.meta.env[key]) {
       missing.push(key);
     }
   }

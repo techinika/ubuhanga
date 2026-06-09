@@ -106,25 +106,34 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID as string | und
 
     <!-- Preconnect -->
     <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+    <link rel="preconnect" href="https://apis.google.com" />
+    <link rel="preconnect" href="https://firestore.googleapis.com" />
+    <link rel="preconnect" href="https://securetoken.googleapis.com" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
-    <!-- Google AdSense — Auto Ads -->
-    <script is:inline
-      async
-      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.PUBLIC_ADSENSE_ID}`}
-      crossorigin="anonymous"></script>
-
-    <!-- Google Analytics 4 -->
-    {gaMeasurementId && (
+    {!noIndex && (
       <>
+        <!-- Google AdSense — Auto Ads -->
         <script is:inline
           async
-          src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
-        <script is:inline set:html={`
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.PUBLIC_ADSENSE_ID}`}
+          crossorigin="anonymous"></script>
+
+        <!-- Google Analytics 4 -->
+        {gaMeasurementId && (
+          <>
+            <script is:inline
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
+            <script is:inline set:html={`
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', '${gaMeasurementId}');
 `} />
+          </>
+        )}
       </>
     )}
 
@@ -343,6 +352,8 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID as string | und
           <div class="site-footer__nav-col">
             <p class="site-footer__nav-title">More</p>
             <a href="/about" class="site-footer__nav-link">About</a>
+            <a href="/terms" class="site-footer__nav-link">Terms</a>
+            <a href="/privacy" class="site-footer__nav-link">Privacy</a>
             <a href="/sitemap.xml" class="site-footer__nav-link">Sitemap</a>
             <a href="/admin" class="site-footer__nav-link">Admin</a>
             <a
@@ -412,56 +423,40 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID as string | und
       </div>
     </footer>
 
-    <!-- Theme toggle script -->
     <script>
+      // Theme toggle
       const themeBtn = document.getElementById("theme-toggle");
-      const html = document.documentElement;
+      const htmlEl = document.documentElement;
       function getPreferredTheme() {
         return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       }
       function getCurrentTheme() {
-        return html.getAttribute("data-theme") || getPreferredTheme();
+        return htmlEl.getAttribute("data-theme") || getPreferredTheme();
       }
       function setTheme(t: string) {
-        html.setAttribute("data-theme", t);
+        htmlEl.setAttribute("data-theme", t);
         localStorage.setItem("ubuhanga-theme", t);
-        if (themeBtn) {
-          themeBtn.setAttribute("aria-pressed", String(t === "dark"));
-        }
+        if (themeBtn) themeBtn.setAttribute("aria-pressed", String(t === "dark"));
       }
-      if (themeBtn) {
-        const initial = getCurrentTheme();
-        themeBtn.setAttribute("aria-pressed", String(initial === "dark"));
-      }
-      themeBtn?.addEventListener("click", () => {
-        const next = getCurrentTheme() === "dark" ? "light" : "dark";
-        setTheme(next);
-      });
-    </script>
+      if (themeBtn) themeBtn.setAttribute("aria-pressed", String(getCurrentTheme() === "dark"));
+      themeBtn?.addEventListener("click", () => setTheme(getCurrentTheme() === "dark" ? "light" : "dark"));
 
-    <!-- Keyboard shortcut: / to focus search -->
-    <script>
+      // Keyboard shortcut: / to focus search
       document.addEventListener("keydown", (e) => {
         const target = e.target as HTMLElement | null;
         if (e.key === "/" && target && !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
           e.preventDefault();
-          const searchLink = document.querySelector('a[href="/search"]');
-          if (searchLink instanceof HTMLAnchorElement) {
-            searchLink.click();
-          }
+          const searchLink = document.querySelector<HTMLAnchorElement>('a[href="/search"]');
+          searchLink?.click();
         }
       });
-    </script>
 
-    <!-- Mobile menu toggle script -->
-    <script>
+      // Mobile menu
       const hamburgerBtn = document.getElementById("hamburger-btn")!;
       const mobileMenu = document.getElementById("mobile-menu")!;
-      const navItems = document.querySelectorAll("[data-nav-item]");
-      const currentPath = window.location.pathname;
-      navItems.forEach((link) => {
+      document.querySelectorAll("[data-nav-item]").forEach((link) => {
         const href = link.getAttribute("href");
-        if (href && (href === currentPath || (href !== "/" && currentPath.startsWith(href)))) {
+        if (href && (href === location.pathname || (href !== "/" && location.pathname.startsWith(href)))) {
           link.setAttribute("aria-current", "page");
         }
       });
@@ -477,19 +472,13 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID as string | und
         mobileMenu.setAttribute("aria-hidden", "false");
         mobileMenu.classList.add("is-open");
         document.body.classList.add("menu-open");
-        const firstLink = mobileMenu.querySelector("a");
-        if (firstLink) firstLink.focus();
+        (mobileMenu.querySelector("a") as HTMLAnchorElement | null)?.focus();
       }
       hamburgerBtn.addEventListener("click", () => {
-        const open = hamburgerBtn.getAttribute("aria-expanded") === "true";
-        if (open) closeMenu();
-        else openMenu();
+        (hamburgerBtn.getAttribute("aria-expanded") === "true" ? closeMenu : openMenu)();
       });
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          const open = hamburgerBtn.getAttribute("aria-expanded") === "true";
-          if (open) closeMenu();
-        }
+        if (e.key === "Escape" && hamburgerBtn.getAttribute("aria-expanded") === "true") closeMenu();
       });
     </script>
   </body>

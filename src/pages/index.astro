@@ -458,32 +458,6 @@ const stats = { totalVideos: rawStats.totalVideos, totalPlaylists: rawStats.tota
   }
 
   /* ═══════════════════════════════════════
-   CATEGORIES BAR
-════════════════════════════════════════ */
-  .categories-bar {
-    position: sticky;
-    top: var(--nav-height);
-    z-index: 10;
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
-    padding: 0.875rem 0;
-  }
-
-  .categories-bar__scroll {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-  }
-
-  .categories-bar__scroll::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* ═══════════════════════════════════════
    SECTIONS — SHARED
 ════════════════════════════════════════ */
   .section {

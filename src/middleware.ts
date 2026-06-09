@@ -16,11 +16,11 @@ function rateLimit(ip: string, maxReqs = 10, windowMs = 60000): boolean {
 
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.youtube.com https://www.googletagmanager.com https://ep2.adtrafficquality.google",
+  "script-src 'self' 'unsafe-inline' https://apis.google.com https://pagead2.googlesyndication.com https://www.youtube.com https://www.googletagmanager.com https://ep2.adtrafficquality.google",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://img.youtube.com https://*.ytimg.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://*",
-  "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
-  "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com wss://*.firebaseio.com https://*.google.com https://*.googleadservices.com https://*.doubleclick.net ep1.adtrafficquality.google https://pagead2.googlesyndication.com https://www.google-analytics.com",
+  "img-src 'self' data: https://img.youtube.com https://*.ytimg.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.google.com https://*.googleusercontent.com https://*.gstatic.com https://accounts.google.com https://apis.google.com",
+  "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://accounts.google.com https://apis.google.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
+  "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com wss://*.firebaseio.com https://*.google.com https://accounts.google.com https://oauth.gstatic.com https://*.googleadservices.com https://*.doubleclick.net ep1.adtrafficquality.google https://pagead2.googlesyndication.com https://www.google-analytics.com",
   "font-src 'self'",
   "media-src 'self'",
   "manifest-src 'self'",

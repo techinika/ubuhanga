@@ -124,7 +124,7 @@ const { videoId } = Astro.props;
       const q = query(
         collection(db, "comments"),
         where("videoId", "==", videoId),
-        where("approved", "==", true),
+        where("status", "==", "approved"),
         orderBy("createdAt", "desc"),
       );
       const snap = await getDocs(q);
@@ -238,6 +238,7 @@ const { videoId } = Astro.props;
         name: user.displayName || user.email || "Anonymous",
         uid: user.uid,
         text,
+        status: "pending",
         createdAt: serverTimestamp(),
       });
       textInput.value = "";

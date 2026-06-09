@@ -1,0 +1,169 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Terms of Service — Ubuhanga"
+  description="Terms of Service for Ubuhanga — a free programming tutorial platform by Techinika."
+>
+  <section class="legal-hero">
+    <div class="container">
+      <span class="legal-hero__label">Legal</span>
+      <h1 class="legal-hero__title">Terms of Service</h1>
+      <p class="legal-hero__subtitle">Last updated: June 2026</p>
+    </div>
+  </section>
+
+  <section class="legal-section">
+    <div class="container">
+      <div class="legal-content">
+        <h2>1. Acceptance of Terms</h2>
+        <p>
+          By accessing or using Ubuhanga ("the Platform"), you agree to be bound by these Terms of
+          Service. If you do not agree, please do not use the Platform.
+        </p>
+
+        <h2>2. Description of Service</h2>
+        <p>
+          Ubuhanga is a free, open learning platform that provides programming and technology
+          tutorials in Kinyarwanda. All content is provided for educational purposes only and is
+          available at no cost.
+        </p>
+
+        <h2>3. User Conduct</h2>
+        <p>When using the Platform, you agree to:</p>
+        <ul>
+          <li>Not post abusive, harassing, or inappropriate comments</li>
+          <li>Not attempt to disrupt or compromise the Platform's security</li>
+          <li>Not use the Platform for any unlawful purpose</li>
+          <li>Not impersonate any person or entity</li>
+        </ul>
+
+        <h2>4. Intellectual Property</h2>
+        <p>
+          All video content, tutorials, and educational materials on Ubuhanga are owned by Techinika
+          or used with permission. You may view and learn from the content for personal,
+          non-commercial use. Redistribution or reproduction without permission is prohibited.
+        </p>
+
+        <h2>5. Third-Party Services</h2>
+        <p>
+          The Platform embeds videos from YouTube and may display advertisements via Google AdSense.
+          These services have their own terms and policies, which we encourage you to review.
+        </p>
+
+        <h2>6. Limitation of Liability</h2>
+        <p>
+          Ubuhanga and Techinika are not liable for any damages arising from your use of the
+          Platform. The content is provided "as is" without warranties of any kind.
+        </p>
+
+        <h2>7. Changes to Terms</h2>
+        <p>
+          We reserve the right to update these terms at any time. Changes will be posted on this
+          page with an updated "Last updated" date.
+        </p>
+
+        <h2>8. Contact</h2>
+        <p>
+          If you have questions about these terms, please contact us at
+          <a href="https://techinika.com" target="_blank" rel="noopener noreferrer">Techinika.com</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal-hero {
+    padding: 5rem 0 3rem;
+    background: var(--color-surface-warm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .legal-hero__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-amber-700);
+    margin-bottom: 0.75rem;
+    display: inline-block;
+  }
+
+  .legal-hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-hero__subtitle {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  .legal-section {
+    padding: 3rem 0 5rem;
+  }
+
+  .legal-content {
+    max-width: 680px;
+  }
+
+  .legal-content h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text-primary);
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-content h2:first-child {
+    margin-top: 0;
+  }
+
+  .legal-content p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .legal-content ul {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+  }
+
+  .legal-content ul li {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.3rem;
+  }
+
+  .legal-content a {
+    color: var(--color-amber-700);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .legal-hero {
+      padding: 3rem 0 2rem;
+    }
+    .legal-section {
+      padding: 2rem 0 3rem;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .legal-content a {
+      color: var(--color-amber-400);
+    }
+  }
+</style>
