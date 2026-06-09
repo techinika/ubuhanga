@@ -326,6 +326,16 @@ const admin = Astro.locals.adminUser;
     min-height: 80px;
   }
 
+  .admin-thumb-preview {
+    width: 240px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    margin-top: 0.4rem;
+    background: var(--color-surface-warm);
+  }
+
   .admin-form__actions {
     display: flex;
     gap: 0.75rem;

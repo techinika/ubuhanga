@@ -14,7 +14,8 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Thumbnail URL</span>
-      <input class="admin-field__input" name="thumbnail" />
+      <input class="admin-field__input" name="thumbnail" id="thumbnail-input" />
+      <img id="thumbnail-preview" class="admin-thumb-preview" hidden alt="Thumbnail preview" />
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Slug</span>
@@ -49,6 +50,17 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
     if (!user) {
       window.location.href = "/admin";
       return;
+    }
+  });
+
+  const thumbInput = document.getElementById("thumbnail-input") as HTMLInputElement;
+  const thumbPreview = document.getElementById("thumbnail-preview") as HTMLImageElement;
+  thumbInput?.addEventListener("input", () => {
+    if (thumbInput.value) {
+      thumbPreview.src = thumbInput.value;
+      thumbPreview.hidden = false;
+    } else {
+      thumbPreview.hidden = true;
     }
   });
 

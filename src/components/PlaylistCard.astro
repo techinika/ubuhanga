@@ -25,14 +25,23 @@ const { playlist } = Astro.props;
     tabindex="-1"
   >
     <div class="playlist-card__thumb">
-      <img
-        src={playlist.thumbnail}
-        alt={`Thumbnail for playlist "${playlist.title}"`}
-        loading="lazy"
-        decoding="async"
-        width="480"
-        height="270"
-      />
+      {playlist.thumbnail ? (
+        <img
+          src={playlist.thumbnail}
+          alt={`Thumbnail for playlist "${playlist.title}"`}
+          loading="lazy"
+          decoding="async"
+          width="480"
+          height="270"
+          onerror="this.style.display='none'"
+        />
+      ) : (
+        <div class="playlist-card__placeholder" aria-hidden="true">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18M3 12h12M3 18h18" />
+          </svg>
+        </div>
+      )}
       <div
         class="playlist-card__count"
         aria-label={`${playlist.videoCount} videos in this playlist`}
@@ -125,7 +134,21 @@ const { playlist } = Astro.props;
     transition: transform var(--transition-slow);
   }
 
-  .playlist-card:hover .playlist-card__thumb img {
+  .playlist-card__thumb img[style*="display:none"] {
+    display: none !important;
+  }
+
+  .playlist-card__placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface-warm);
+  }
+
+  .playlist-card:hover .playlist-card__thumb img:not([style*="display:none"]) {
     transform: scale(1.04);
   }
 

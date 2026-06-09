@@ -27,6 +27,8 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 | `/playlists/[slug]` | Single playlist — ordered video list with duration |
 | `/search` | Client-side search across all video fields |
 | `/about` | About Ubuhanga and Techinika |
+| `/terms` | Terms of Service |
+| `/privacy` | Privacy Policy |
 | `/admin` | Admin sign-in with Google |
 | `/admin/videos` | Manage videos (list, create, edit, delete) — paginated |
 | `/admin/playlists` | Manage playlists (list, create, edit, delete) — paginated |
@@ -67,6 +69,8 @@ src/
 │   ├── 404.astro
 │   ├── 500.astro
 │   ├── about.astro
+│   ├── terms.astro
+│   ├── privacy.astro
 │   ├── search.astro
 │   ├── rss.xml.ts
 │   ├── sitemap.xml.ts
@@ -147,7 +151,7 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 | `videos` | Video metadata (title, description, youtubeId, duration, views, category, slug, tags) |
 | `playlists` | Curated groupings of videos |
 | `categories` | Distinct category labels |
-| `comments` | User comments on videos (tied to Google Auth UID) |
+| `comments` | User comments on videos (tied to Google Auth UID, status: pending/approved/rejected) |
 | `subscribers` | Newsletter email subscriptions |
 | `admins` | Documents keyed by UID; presence grants admin panel access |
 | `auditLog` | Admin action audit trail |

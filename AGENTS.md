@@ -16,6 +16,9 @@
 - Self-hosted fonts via @fontsource (Inter + Lexend)
 - CSS custom properties with light/dark theme
 - Collections as constants in `@/lib/constants.ts`
+- Environment variables use `import.meta.env` (NOT `process.env`) via `validateEnv()` in `@/lib/env.ts`
+- Comment moderation uses `status` field (`"pending"`/`"approved"`/`"rejected"`), not a boolean
+- CSP in `src/middleware.ts` covers Firebase Auth, Google Sign-In, AdSense, GA4, YouTube embeds
 
 ## Project Structure
 ```
@@ -23,7 +26,7 @@ src/
   components/     — Astro components (VideoCard, CommentSection, etc.)
   layouts/        — BaseLayout.astro, AdminLayout.astro
   lib/            — Utilities, helpers, Firebase config, constants, barrel exports
-  pages/          — Astro pages (SSR) including admin comments, API routes
+  pages/          — Astro pages (SSR) including admin comments, API routes, terms/privacy
   middleware.ts   — CSP, rate limiting, security headers, admin auth guard
   styles/         — globals.css (design tokens, theme)
 public/           — Static assets

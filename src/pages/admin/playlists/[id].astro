@@ -29,7 +29,8 @@ const data = snap.data()!;
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Thumbnail URL</span>
-      <input class="admin-field__input" name="thumbnail" value={data.thumbnail ?? ""} />
+      <input class="admin-field__input" name="thumbnail" id="thumbnail-input" value={data.thumbnail ?? ""} />
+      <img id="thumbnail-preview" class="admin-thumb-preview" hidden alt="Thumbnail preview" />
     </label>
     <label class="admin-field">
       <span class="admin-field__label">Slug</span>
@@ -68,6 +69,21 @@ const data = snap.data()!;
   });
 
   const playlistId = window.location.pathname.split("/").pop()!;
+
+  const thumbInput = document.getElementById("thumbnail-input") as HTMLInputElement;
+  const thumbPreview = document.getElementById("thumbnail-preview") as HTMLImageElement;
+  if (thumbInput?.value) {
+    thumbPreview.src = thumbInput.value;
+    thumbPreview.hidden = false;
+  }
+  thumbInput?.addEventListener("input", () => {
+    if (thumbInput.value) {
+      thumbPreview.src = thumbInput.value;
+      thumbPreview.hidden = false;
+    } else {
+      thumbPreview.hidden = true;
+    }
+  });
 
   document.getElementById("playlist-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
