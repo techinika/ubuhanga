@@ -25,55 +25,57 @@ import { SITE_NAME, SITE_URL } from "@/lib/constants";
   <section class="ask-form-section">
     <div class="container">
       <form id="ask-form" class="ask-form" novalidate>
-        <div class="ask-form__field">
-          <label for="ask-name" class="ask-form__label">Your name</label>
-          <input
-            id="ask-name"
-            name="name"
-            type="text"
-            class="ask-form__input"
-            placeholder="e.g. Jean"
-            required
-          />
+        <div id="ask-form-fields">
+          <div class="ask-form__field">
+            <label for="ask-name" class="ask-form__label">Your name</label>
+            <input
+              id="ask-name"
+              name="name"
+              type="text"
+              class="ask-form__input"
+              placeholder="e.g. Jean"
+              required
+            />
+          </div>
+
+          <div class="ask-form__field">
+            <label for="ask-email" class="ask-form__label">Email address</label>
+            <input
+              id="ask-email"
+              name="email"
+              type="email"
+              class="ask-form__input"
+              placeholder="jean@example.com"
+              required
+            />
+          </div>
+
+          <div class="ask-form__field">
+            <label for="ask-type" class="ask-form__label">What is this about?</label>
+            <select id="ask-type" name="type" class="ask-form__input ask-form__select">
+              <option value="question">A tech question</option>
+              <option value="tutorial">A tutorial request</option>
+            </select>
+          </div>
+
+          <div class="ask-form__field">
+            <label for="ask-message" class="ask-form__label">Your message</label>
+            <textarea
+              id="ask-message"
+              name="message"
+              class="ask-form__input ask-form__textarea"
+              rows="5"
+              placeholder="Describe your question or the tutorial you would like to see…"
+              required
+            ></textarea>
+          </div>
+
+          <div id="ask-error" class="ask-form__error" hidden></div>
+
+          <button type="submit" id="ask-submit" class="btn btn--primary ask-form__submit">
+            Send
+          </button>
         </div>
-
-        <div class="ask-form__field">
-          <label for="ask-email" class="ask-form__label">Email address</label>
-          <input
-            id="ask-email"
-            name="email"
-            type="email"
-            class="ask-form__input"
-            placeholder="jean@example.com"
-            required
-          />
-        </div>
-
-        <div class="ask-form__field">
-          <label for="ask-type" class="ask-form__label">What is this about?</label>
-          <select id="ask-type" name="type" class="ask-form__input ask-form__select">
-            <option value="question">A tech question</option>
-            <option value="tutorial">A tutorial request</option>
-          </select>
-        </div>
-
-        <div class="ask-form__field">
-          <label for="ask-message" class="ask-form__label">Your message</label>
-          <textarea
-            id="ask-message"
-            name="message"
-            class="ask-form__input ask-form__textarea"
-            rows="5"
-            placeholder="Describe your question or the tutorial you would like to see…"
-            required
-          ></textarea>
-        </div>
-
-        <div id="ask-error" class="ask-form__error" hidden></div>
-
-        <button type="submit" id="ask-submit" class="btn btn--primary ask-form__submit">
-          Send
-        </button>
 
         <div id="ask-success" class="ask-form__success" hidden>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -91,13 +93,19 @@ import { SITE_NAME, SITE_URL } from "@/lib/constants";
 
 <script>
   const form = document.getElementById("ask-form") as HTMLFormElement | null;
+  const fieldsEl = document.getElementById("ask-form-fields") as HTMLElement | null;
   const errorEl = document.getElementById("ask-error") as HTMLElement | null;
   const successEl = document.getElementById("ask-success") as HTMLElement | null;
   const submitBtn = document.getElementById("ask-submit") as HTMLButtonElement | null;
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!form || !errorEl || !successEl || !submitBtn) return;
+    if (!form || !fieldsEl || !errorEl || !successEl || !submitBtn) return;
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
     errorEl.hidden = true;
     successEl.hidden = true;
@@ -128,7 +136,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/constants";
         return;
       }
       successEl.hidden = false;
-      form.reset();
+      fieldsEl.hidden = true;
       submitBtn.disabled = false;
       submitBtn.textContent = "Send";
     } catch {

@@ -298,17 +298,19 @@ const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID as string | und
     {
       breadcrumbs.length > 0 && (
         <nav class="breadcrumbs" aria-label="Breadcrumb">
-          <ol class="breadcrumbs__list">
-            {breadcrumbs.map((crumb, i) => (
-              <li class="breadcrumbs__item">
-                {i < breadcrumbs.length - 1 ? (
-                  <a href={crumb.item} class="breadcrumbs__link">{crumb.name}</a>
-                ) : (
-                  <span class="breadcrumbs__current" aria-current="page">{crumb.name}</span>
-                )}
-              </li>
-            ))}
-          </ol>
+          <div class="container">
+            <ol class="breadcrumbs__list">
+              {breadcrumbs.map((crumb, i) => (
+                <li class="breadcrumbs__item">
+                  {i < breadcrumbs.length - 1 ? (
+                    <a href={crumb.item} class="breadcrumbs__link">{crumb.name}</a>
+                  ) : (
+                    <span class="breadcrumbs__current" aria-current="page">{crumb.name}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
         </nav>
       )
     }
