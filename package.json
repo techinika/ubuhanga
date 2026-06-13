@@ -24,6 +24,11 @@
     "firebase": "^12.14.0",
     "firebase-admin": "^13.10.0"
   },
+  "overrides": {
+    "@vite-pwa/astro": {
+      "astro": "$astro"
+    }
+  },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.60.1",
     "eslint": "^10.4.1",

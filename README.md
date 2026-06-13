@@ -8,7 +8,7 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 
 - **Framework:** [Astro](https://astro.build) v6 (SSR — `output: "server"`)
 - **Adapter:** `@astrojs/vercel`
-- **PWA:** `@vite-pwa/astro` — manifest + Workbox service worker, install button on mobile bottom nav / desktop footer
+- **PWA:** `@vite-pwa/astro` — manifest + Workbox service worker, install button on mobile bottom nav / desktop footer (peer dependency on Astro <6 resolved via `overrides` in `package.json`)
 - **Auth:** Firebase Auth (Google sign-in for admin panel + comments), session cookies via Firebase Admin SDK
 - **Database:** Firebase Firestore (videos, playlists, categories, comments, subscribers, auditLog)
 - **Ads:** Google AdSense (`ca-pub-1268572467254702`)

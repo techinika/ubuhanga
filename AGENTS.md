@@ -20,6 +20,7 @@
 - Comment moderation uses `status` field (`"pending"`/`"approved"`/`"rejected"`), not a boolean
 - CSP in `src/middleware.ts` covers Firebase Auth, Google Sign-In, AdSense, GA4, YouTube embeds
 - PWA via `@vite-pwa/astro` configured in `astro.config.mjs` — manifest uses SVG icon, Workbox precaches static assets, skips admin routes
+- `package.json` uses `overrides` to resolve `@vite-pwa/astro` peer dependency on Astro <6 (since it actually works with v6, just the declaration is outdated)
 - Mobile bottom nav (`.bottom-nav`, `<768px`) has Videos, Playlists, Support, Install — hidden on desktop
 - Install button (`.install-btn--hidden` class) starts hidden, shown on `beforeinstallprompt` event, hidden after `appinstalled`
 - Categories bar (`.categories-bar__scroll`) uses `overflow-x: auto` with full-bleed negative margins on mobile for horizontal touch scroll
