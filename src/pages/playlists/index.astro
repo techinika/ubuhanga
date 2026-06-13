@@ -61,6 +61,7 @@ const allPlaylists = await getPlaylists(50).catch(() => [] as import("@/lib/fire
           />
         )
       }
+      <GoogleAd slot="PLAYLISTS_BOTTOM" format="horizontal" className="ad-section" />
     </div>
   </section>
 </BaseLayout>

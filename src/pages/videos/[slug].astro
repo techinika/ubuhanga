@@ -158,6 +158,8 @@ try {
                   <p>{video.description}</p>
                 </div>
 
+                <GoogleAd slot="VIDEO_AFTER_DESCRIPTION" format="horizontal" className="ad-in-content" />
+
                 {video.tags && video.tags.length > 0 && (
                   <div class="video-page__tags">
                     {video.tags.map((tag) => (

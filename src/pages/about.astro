@@ -3,6 +3,7 @@
 // About Techinika — a venture studio and media house
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import GoogleAd from "@/components/GoogleAd.astro";
 ---
 
 <BaseLayout
@@ -87,6 +88,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
       </div>
     </div>
   </section>
+
+  <GoogleAd slot="ABOUT_BETWEEN" format="horizontal" className="ad-section" />
 
   <section class="about-values">
     <div class="container">

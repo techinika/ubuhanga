@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import GoogleAd from "@/components/GoogleAd.astro";
 ---
 
 <BaseLayout
@@ -113,6 +114,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
       </div>
     </div>
   </section>
+
+  <GoogleAd slot="PRIVACY_BOTTOM" format="horizontal" className="ad-section" />
 </BaseLayout>
 
 <style>

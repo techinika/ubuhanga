@@ -167,6 +167,31 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 - **Noindex:** Applied to `/admin/*` and `/search` only
 - **Submission:** Submit to [Google Search Console](https://search.google.com/search-console) for indexing
 
+## AdSense
+
+- **Auto Ads:** Enabled globally via `adsbygoogle.js` script in `BaseLayout.astro` head (skipped on noindex pages)
+- **Manual placements:** 12 ad slots across 9 pages via `GoogleAd` component:
+
+| Page | Slot | Format | Location |
+|---|---|---|---|
+| Homepage | `HOME_AFTER_HERO` | horizontal | Below hero, above categories bar |
+| Homepage | `HOME_BETWEEN_SECTIONS` | horizontal | Between playlists and about strip |
+| All Videos | `VIDEOS_TOP` | horizontal | Above video grid |
+| All Videos | `VIDEOS_BOTTOM` | horizontal | Below video grid |
+| Single Video | `VIDEO_SIDEBAR` | rectangle | Sidebar above related videos |
+| Single Video | `VIDEO_AFTER_DESCRIPTION` | horizontal | Below description, above comments |
+| All Playlists | `PLAYLISTS_TOP` | horizontal | Above playlist grid |
+| All Playlists | `PLAYLISTS_BOTTOM` | horizontal | Below playlist grid |
+| Single Playlist | `PLAYLIST_TOP` | horizontal | Below playlist header, above video list |
+| Single Playlist | `PLAYLIST_BOTTOM` | horizontal | Below video list |
+| About | `ABOUT_BETWEEN` | horizontal | Between content and values sections |
+| Ask | `ASK_BOTTOM` | horizontal | Below form |
+| Terms | `TERMS_BOTTOM` | horizontal | Below legal content |
+| Privacy | `PRIVACY_BOTTOM` | horizontal | Below legal content |
+
+- **Verification:** `/ads.txt` (google.com, pub-1268572467254702, DIRECT)
+- **CSP:** AdSense domains allowed in script-src, frame-src, and connect-src (see `middleware.ts`)
+
 ## Security
 
 - **Content Security Policy:** Restricts scripts, styles, frames, connections, and fonts to trusted origins (self, YouTube, Firebase, Google AdSense)

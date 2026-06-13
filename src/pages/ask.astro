@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import GoogleAd from "@/components/GoogleAd.astro";
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
 ---
 
@@ -84,6 +85,8 @@ import { SITE_NAME, SITE_URL } from "@/lib/constants";
       </form>
     </div>
   </section>
+
+  <GoogleAd slot="ASK_BOTTOM" format="horizontal" className="ad-section" />
 </BaseLayout>
 
 <script>

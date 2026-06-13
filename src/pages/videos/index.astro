@@ -79,6 +79,7 @@ const [allVideos, allCategories] = await Promise.all([
       ) : (
         <EmptyState title="No videos yet" message="Videos will appear here once added." />
       )}
+      <GoogleAd slot="VIDEOS_BOTTOM" format="horizontal" className="ad-section" />
     </div>
   </section>
 </BaseLayout>

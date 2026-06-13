@@ -26,6 +26,7 @@
 - Categories bar (`.categories-bar__scroll`) uses `overflow-x: auto` with full-bleed negative margins on mobile for horizontal touch scroll
 - Noindex applied to `/admin/*` and `/search`; sitemap excludes `/search`
 - `/ask` page lets visitors request tutorials or ask tech questions — submissions go to `requests` Firestore collection
+- AdSense: Auto Ads globally + 14 manual placements across 9 pages via `GoogleAd` component (see README for full slot table)
 
 ## Project Structure
 ```
