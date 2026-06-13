@@ -157,6 +157,14 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 | `admins` | Documents keyed by UID; presence grants admin panel access |
 | `auditLog` | Admin action audit trail |
 
+## Search Engine Optimization
+
+- **robots.txt:** Allows all crawlers across the site; sitemap linked
+- **Sitemap:** Generated at `/sitemap.xml` — includes all public pages and video/playlist detail pages (search page excluded — has `noindex`)
+- **Metatags:** `title`, `description`, `canonical`, Open Graph, Twitter Card, JSON-LD structured data (Organization, BreadcrumbList, VideoObject, WebSite with SearchAction)
+- **Noindex:** Applied to `/admin/*` and `/search` only
+- **Submission:** Submit to [Google Search Console](https://search.google.com/search-console) for indexing
+
 ## Security
 
 - **Content Security Policy:** Restricts scripts, styles, frames, connections, and fonts to trusted origins (self, YouTube, Firebase, Google AdSense)

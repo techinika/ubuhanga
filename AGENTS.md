@@ -23,6 +23,7 @@
 - Mobile bottom nav (`.bottom-nav`, `<768px`) has Videos, Playlists, Support, Install — hidden on desktop
 - Install button (`.install-btn--hidden` class) starts hidden, shown on `beforeinstallprompt` event, hidden after `appinstalled`
 - Categories bar (`.categories-bar__scroll`) uses `overflow-x: auto` with full-bleed negative margins on mobile for horizontal touch scroll
+- Noindex applied to `/admin/*` and `/search`; sitemap excludes `/search`
 
 ## Project Structure
 ```
