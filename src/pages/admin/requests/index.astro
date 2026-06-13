@@ -1,0 +1,169 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { getRequestsForAdmin } from "@/lib/firestore";
+
+const requests = await getRequestsForAdmin();
+---
+
+<AdminLayout title="Requests — Admin — Ubuhanga" heading="Requests">
+  <div class="admin-bar">
+    <p class="admin-bar__title">Requests & Questions ({requests.length})</p>
+  </div>
+
+  {requests.length === 0 ? (
+    <p class="admin-empty">No requests yet.</p>
+  ) : (
+    <div class="admin-requests">
+      {requests.map((r) => (
+        <div class="admin-request" data-request-id={r.id}>
+          <div class="admin-request__header">
+            <strong>{r.name}</strong>
+            <span class="admin-request__email">{r.email}</span>
+            <span class="admin-request__date">
+              {new Date(r.createdAt).toLocaleDateString()}
+            </span>
+            <span class:list={[
+              "admin-request__type",
+              `admin-request__type--${r.type}`,
+            ]}>
+              {r.type === "tutorial" ? "Tutorial" : "Question"}
+            </span>
+          </div>
+          <p class="admin-request__message">{r.message}</p>
+          <div class="admin-request__actions">
+            <button
+              class="admin-btn-sm admin-btn-sm--danger"
+              data-delete={r.id}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  import { getFirebaseDB, getFirebaseAuth } from "@/lib/firebase-client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { doc, deleteDoc } from "firebase/firestore";
+
+  const auth = getFirebaseAuth();
+  const db = getFirebaseDB();
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "/admin";
+      return;
+    }
+    initPage();
+  });
+
+  async function deleteRequest(id: string) {
+    if (!confirm("Delete this request permanently?")) return;
+    const el = document.querySelector(`[data-request-id="${id}"]`);
+    if (!el) return;
+    const btn = el.querySelector("[data-delete]") as HTMLButtonElement | null;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Deleting…";
+    }
+    try {
+      await deleteDoc(doc(db, "requests", id));
+      el.remove();
+    } catch (e) {
+      console.error("Failed to delete request:", e);
+      alert("Failed to delete.");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Delete";
+      }
+    }
+  }
+
+  function initPage() {
+    document.querySelectorAll("[data-delete]").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        deleteRequest((btn as HTMLButtonElement).getAttribute("data-delete")!),
+      );
+    });
+  }
+</script>
+
+<style is:global>
+  .admin-requests {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .admin-request {
+    padding: 1rem;
+    background: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .admin-request__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.88rem;
+    flex-wrap: wrap;
+  }
+
+  .admin-request__email {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .admin-request__date {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+
+  .admin-request__type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full);
+  }
+
+  .admin-request__type--question {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .admin-request__type--tutorial {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .admin-request__message {
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    white-space: pre-wrap;
+  }
+
+  .admin-request__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .admin-request__type--question {
+      background: rgba(219, 234, 254, 0.15);
+      color: #93c5fd;
+    }
+    .admin-request__type--tutorial {
+      background: rgba(254, 243, 199, 0.15);
+      color: #fde68a;
+    }
+  }
+</style>

@@ -25,6 +25,7 @@
 - Install button (`.install-btn--hidden` class) starts hidden, shown on `beforeinstallprompt` event, hidden after `appinstalled`
 - Categories bar (`.categories-bar__scroll`) uses `overflow-x: auto` with full-bleed negative margins on mobile for horizontal touch scroll
 - Noindex applied to `/admin/*` and `/search`; sitemap excludes `/search`
+- `/ask` page lets visitors request tutorials or ask tech questions — submissions go to `requests` Firestore collection
 
 ## Project Structure
 ```
@@ -46,12 +47,14 @@ public/           — Static assets
 ## API Routes
 - `POST /api/newsletter` — Server-side newsletter subscription (validates name + email, checks duplicates)
 - `POST/DELETE /api/admin/session` — Admin session cookie management
+- `POST /api/ask` — Submit tutorial request / tech question (validates name, email, message)
 
 ## Admin Pages
 - `/admin/videos` — Paginated video list (25 per page)
 - `/admin/playlists` — Paginated playlist list (25 per page)
 - `/admin/categories` — Category CRUD
 - `/admin/comments` — Comment moderation (approve/reject with status tabs)
+- `/admin/requests` — View and delete submitted tutorial requests / tech questions
 
 ## Import Template
 ```astro

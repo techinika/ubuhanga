@@ -16,6 +16,7 @@ export {
   getCommentStatusCounts,
   writeAuditLog,
   getSiteStats,
+  getRequestsForAdmin,
 } from "./firestore";
 
 export type {
@@ -23,4 +24,5 @@ export type {
   Playlist,
   Subscriber,
   Comment,
+  Request,
 } from "./firestore";

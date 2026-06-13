@@ -311,6 +311,34 @@ export async function getCommentStatusCounts(): Promise<{
   };
 }
 
+// ─── Requests ────────────────────────────────────────────
+
+export interface Request {
+  id: string;
+  name: string;
+  email: string;
+  type: "tutorial" | "question";
+  message: string;
+  createdAt: string;
+}
+
+export async function getRequestsForAdmin(): Promise<Request[]> {
+  const db = getDB();
+  const snap = await db
+    .collection(COLLECTIONS.REQUESTS)
+    .orderBy("createdAt", "desc")
+    .limit(100)
+    .get();
+  return snap.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      ...d,
+      createdAt: timestampToISO(d.createdAt),
+    } as Request;
+  });
+}
+
 // ─── Audit Log ──────────────────────────────────────────
 
 export async function writeAuditLog(entry: {

@@ -11,5 +11,6 @@ export const COLLECTIONS = {
   COMMENTS: "comments",
   SUBSCRIBERS: "subscribers",
   ADMINS: "admins",
+  REQUESTS: "requests",
   AUDIT_LOG: "auditLog",
 } as const;

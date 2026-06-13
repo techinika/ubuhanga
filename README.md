@@ -27,6 +27,7 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 | `/playlists` | All curated playlists |
 | `/playlists/[slug]` | Single playlist — ordered video list with duration |
 | `/search` | Client-side search across all video fields |
+| `/ask` | Request a tutorial or ask a tech question — submitted to Firestore |
 | `/about` | About Ubuhanga and Techinika |
 | `/terms` | Terms of Service |
 | `/privacy` | Privacy Policy |
@@ -35,6 +36,7 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 | `/admin/playlists` | Manage playlists (list, create, edit, delete) — paginated |
 | `/admin/categories` | Manage categories |
 | `/admin/comments` | Moderate comments (approve / reject) |
+| `/admin/requests` | View and delete tutorial requests / questions |
 | `/rss.xml` | RSS feed of all videos |
 | `/sitemap.xml` | Dynamic sitemap (static pages + videos + playlists) |
 
