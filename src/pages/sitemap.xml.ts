@@ -34,6 +34,7 @@ export const GET: APIRoute = async () => {
     { loc: "/videos", priority: PRIORITIES.videos },
     { loc: "/playlists", priority: PRIORITIES.playlists },
     { loc: "/about", priority: PRIORITIES.about },
+    { loc: "/ask", priority: "0.6" },
     { loc: "/terms", priority: "0.6" },
     { loc: "/privacy", priority: "0.6" },
     { loc: "/search", priority: PRIORITIES.search },
