@@ -22,6 +22,7 @@
 - PWA via `@vite-pwa/astro` configured in `astro.config.mjs` — manifest uses SVG icon, Workbox precaches static assets, skips admin routes
 - Mobile bottom nav (`.bottom-nav`, `<768px`) has Videos, Playlists, Support, Install — hidden on desktop
 - Install button (`.install-btn--hidden` class) starts hidden, shown on `beforeinstallprompt` event, hidden after `appinstalled`
+- Categories bar (`.categories-bar__scroll`) uses `overflow-x: auto` with full-bleed negative margins on mobile for horizontal touch scroll
 
 ## Project Structure
 ```

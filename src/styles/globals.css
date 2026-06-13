@@ -305,6 +305,21 @@ body {
   display: none;
 }
 
+@media (max-width: 768px) {
+  .categories-bar__scroll {
+    margin-inline: calc(-1 * var(--container-pad));
+    padding-inline: var(--container-pad);
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    gap: 0.4rem;
+  }
+
+  .categories-bar__scroll > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+}
+
 /* ─── Selection ──────────────────────────────────────────── */
 ::selection {
   background: var(--color-amber-200);

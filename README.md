@@ -43,7 +43,7 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 ```
 src/
 ├── components/
-│   ├── CategoryPill.astro       # Filter pill (button or link)
+│   ├── CategoryPill.astro       # Filter pill (button or link), horizontal touch scroll on mobile
 │   ├── CommentSection.astro     # Google Auth + comment CRUD
 │   ├── EmptyState.astro         # Reusable empty state with icon
 │   ├── ErrorPage.astro          # Shared 404/500 layout
