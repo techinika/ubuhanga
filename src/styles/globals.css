@@ -88,6 +88,7 @@ textarea {
   --container-max: 1200px;
   --container-pad: 1.5rem;
   --nav-height: 68px;
+  --bottom-nav-height: 64px;
 
   /* Radii */
   --radius-sm: 6px;

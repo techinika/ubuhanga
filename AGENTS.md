@@ -19,6 +19,9 @@
 - Environment variables use `import.meta.env` (NOT `process.env`) via `validateEnv()` in `@/lib/env.ts`
 - Comment moderation uses `status` field (`"pending"`/`"approved"`/`"rejected"`), not a boolean
 - CSP in `src/middleware.ts` covers Firebase Auth, Google Sign-In, AdSense, GA4, YouTube embeds
+- PWA via `@vite-pwa/astro` configured in `astro.config.mjs` — manifest uses SVG icon, Workbox precaches static assets, skips admin routes
+- Mobile bottom nav (`.bottom-nav`, `<768px`) has Videos, Playlists, Support, Install — hidden on desktop
+- Install button (`.install-btn--hidden` class) starts hidden, shown on `beforeinstallprompt` event, hidden after `appinstalled`
 
 ## Project Structure
 ```

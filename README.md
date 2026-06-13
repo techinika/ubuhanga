@@ -8,6 +8,7 @@ A free, open learning platform delivering tech tutorials in **Kinyarwanda**. A p
 
 - **Framework:** [Astro](https://astro.build) v6 (SSR — `output: "server"`)
 - **Adapter:** `@astrojs/vercel`
+- **PWA:** `@vite-pwa/astro` — manifest + Workbox service worker, install button on mobile bottom nav / desktop footer
 - **Auth:** Firebase Auth (Google sign-in for admin panel + comments), session cookies via Firebase Admin SDK
 - **Database:** Firebase Firestore (videos, playlists, categories, comments, subscribers, auditLog)
 - **Ads:** Google AdSense (`ca-pub-1268572467254702`)
@@ -52,7 +53,7 @@ src/
 │   └── VideoCard.astro
 ├── layouts/
 │   ├── AdminLayout.astro        # Admin shell with sidebar nav and auth
-│   └── BaseLayout.astro         # SEO head, OG, schema.org, nav, footer, theme toggle
+│   └── BaseLayout.astro         # SEO head, OG, schema.org, nav, bottom nav (mobile), footer, theme toggle, PWA install button
 ├── lib/
 │   ├── admin-auth.ts            # Server-side admin session verification
 │   ├── category-filter.ts       # Shared JS for category pill filtering
